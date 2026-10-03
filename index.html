@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aurora — генерация изображений</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="app">
+    <!-- Заголовок -->
+    <header class="header">
+      <h1 class="logo">Aurora</h1>
+      <p class="subtitle">Генерация изображений с помощью ИИ</p>
+    </header>
+
+    <!-- Основная панель -->
+    <main class="panel">
+
+      <!-- Поле промта -->
+      <label class="label" for="prompt">Ваш промт</label>
+      <textarea 
+        id="prompt" 
+        class="textarea" 
+        placeholder="Опишите, что вы хотите увидеть... Например: закат над горами в стиле аниме"
+      ></textarea>
+
+      <!-- Прикрепление картинки к промту -->
+      <div class="row">
+        <label class="file-btn">
+          📎 Прикрепить картинку
+          <input type="file" id="imageInput" accept="image/*" hidden>
+        </label>
+        <span id="fileName" class="file-name">Файл не выбран</span>
+      </div>
+
+      <!-- Превью загруженной картинки -->
+      <div id="previewWrap" class="preview-wrap hidden">
+        <img id="preview" class="preview" alt="Превью">
+        <button id="removeImage" class="remove-btn" type="button">✕</button>
+      </div>
+
+      <!-- Выбор соотношения сторон -->
+      <label class="label">Соотношение сторон</label>
+      <div class="ratios" id="ratios">
+        <button class="ratio-btn active" data-ratio="1:1">1:1</button>
+        <button class="ratio-btn" data-ratio="16:9">16:9</button>
+        <button class="ratio-btn" data-ratio="9:16">9:16</button>
+        <button class="ratio-btn" data-ratio="4:3">4:3</button>
+        <button class="ratio-btn" data-ratio="3:4">3:4</button>
+      </div>
+
+      <!-- Кнопка генерации -->
+      <button id="generateBtn" class="generate-btn" type="button">
+        ✨ Сгенерировать
+      </button>
+
+      <!-- Место для результата -->
+      <div id="result" class="result hidden">
+        <p class="result-text">Здесь появится изображение</p>
+        <div id="resultImageWrap" class="result-image-wrap"></div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
