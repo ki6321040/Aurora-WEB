@@ -51,7 +51,7 @@
             </ul>
           </div>
 
-          <!-- ===== ВХОДНЫЕ ИЗОБРАЖЕНИЯ (мультизагрузка) ===== -->
+          <!-- Входные изображения -->
           <label class="label">
             Входные изображения
             <span class="counter" id="imagesCounter">0 / 4</span>
@@ -66,13 +66,11 @@
 
           <div id="imagesPreview" class="images-preview"></div>
 
-          <!-- Перевод (Pro) -->
           <label class="checkbox-row hidden" id="translateRow">
             <input type="checkbox" id="translateInput">
             <span>Перевод входящих данных</span>
           </label>
 
-          <!-- Соотношение -->
           <label class="label">Соотношение сторон</label>
           <select id="ratioSelect" class="select">
             <option value="auto">auto</option>
@@ -88,13 +86,11 @@
             <option value="9:21">9:21</option>
           </select>
 
-          <!-- Разрешение -->
           <div id="resolutionBlock" class="hidden">
             <label class="label">Разрешение</label>
             <select id="resolutionSelect" class="select"></select>
           </div>
 
-          <!-- Версия -->
           <div id="versionBlock" class="hidden">
             <label class="label">Версия нейросети</label>
             <select id="versionSelect" class="select">
@@ -103,24 +99,20 @@
             </select>
           </div>
 
-          <!-- Кол-во -->
           <label class="label">Количество изображений: <span id="numImagesValue">1</span></label>
           <input type="range" id="numImages" min="1" max="4" value="1" class="range">
 
-          <!-- Seed -->
           <div id="seedBlock" class="hidden">
             <label class="label">Случайное зерно (seed)</label>
             <input type="number" id="seedInput" class="input" placeholder="Пусто = случайное">
           </div>
 
-          <!-- Сист. промт -->
           <div id="systemPromptBlock" class="hidden">
             <label class="label">Системный промт</label>
             <textarea id="systemPrompt" class="textarea" style="min-height:70px"
               placeholder="Дополнительные инструкции"></textarea>
           </div>
 
-          <!-- Формат -->
           <label class="label">Формат вывода</label>
           <select id="formatSelect" class="select">
             <option value="png" selected>png</option>
@@ -128,13 +120,11 @@
             <option value="webp">webp</option>
           </select>
 
-          <!-- Веб-поиск -->
           <label class="checkbox-row hidden" id="webSearchRow">
             <input type="checkbox" id="webSearch">
             <span>Веб-поиск</span>
           </label>
 
-          <!-- Thinking -->
           <div id="thinkingBlock" class="hidden">
             <label class="label">Уровень размышления модели</label>
             <select id="thinkingSelect" class="select">
@@ -159,11 +149,11 @@
           </div>
 
           <div class="result-content hidden" id="resultContent">
-            <img id="resultImage" class="result-image" alt="Результат">
+            <div id="resultImages" class="result-grid"></div>
             <div class="result-info">
               <p id="resultMeta" class="result-meta"></p>
               <div class="result-actions">
-                <button id="downloadCurrent" class="action-btn">⬇ Скачать</button>
+                <button id="downloadCurrent" class="action-btn">⬇ Скачать всё</button>
                 <button id="clearResult" class="action-btn">✕ Очистить</button>
               </div>
             </div>
