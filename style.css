@@ -6,7 +6,6 @@
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-/* ===== ФОН ===== */
 body {
   min-height: 100vh;
   background: radial-gradient(circle at 20% 20%, #1e1b4b, #0a0a15 60%);
@@ -16,17 +15,10 @@ body {
   padding: 24px 16px;
 }
 
-/* ===== КОНТЕЙНЕР ===== */
-.app {
-  width: 100%;
-  max-width: 640px;
-}
+.app { width: 100%; max-width: 640px; }
 
-/* ===== ЗАГОЛОВОК ===== */
-.header {
-  text-align: center;
-  margin-bottom: 28px;
-}
+/* Заголовок */
+.header { text-align: center; margin-bottom: 28px; }
 
 .logo {
   font-size: 42px;
@@ -38,13 +30,9 @@ body {
   color: transparent;
 }
 
-.subtitle {
-  color: #9ca3af;
-  font-size: 14px;
-  margin-top: 6px;
-}
+.subtitle { color: #9ca3af; font-size: 14px; margin-top: 6px; }
 
-/* ===== ПАНЕЛЬ ===== */
+/* Панель */
 .panel {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -56,17 +44,12 @@ body {
   gap: 14px;
 }
 
-/* ===== ПОДПИСИ ===== */
-.label {
-  font-size: 13px;
-  color: #9ca3af;
-  margin-bottom: -6px;
-}
+.label { font-size: 13px; color: #9ca3af; margin-bottom: -6px; }
 
-/* ===== ТЕКСТАРЕА ===== */
+/* Текстареа */
 .textarea {
   width: 100%;
-  min-height: 120px;
+  min-height: 110px;
   resize: vertical;
   padding: 14px;
   border-radius: 14px;
@@ -76,78 +59,29 @@ body {
   font-size: 15px;
   outline: none;
   transition: border 0.2s;
+  font-family: inherit;
 }
 
-.textarea:focus {
-  border-color: #a78bfa;
-}
+.textarea:focus { border-color: #a78bfa; }
 
-/* ===== СТРОКА С ФАЙЛОМ ===== */
-.row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.file-btn {
-  display: inline-block;
-  padding: 10px 16px;
-  background: rgba(167, 139, 250, 0.15);
-  border: 1px solid rgba(167, 139, 250, 0.4);
-  border-radius: 12px;
-  color: #c4b5fd;
-  font-size: 14px;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.file-btn:hover {
-  background: rgba(167, 139, 250, 0.25);
-}
-
-.file-name {
-  font-size: 13px;
-  color: #9ca3af;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 200px;
-}
-
-/* ===== ПРЕВЬЮ ===== */
-.preview-wrap {
-  position: relative;
-  display: inline-block;
-  max-width: 140px;
-}
-
-.preview {
+/* Селекты и инпуты */
+.select, .input {
   width: 100%;
+  padding: 12px 14px;
   border-radius: 12px;
-  display: block;
-}
-
-.remove-btn {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: none;
-  background: #ef4444;
-  color: white;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #f3f4f6;
+  font-size: 14px;
+  outline: none;
   cursor: pointer;
-  font-size: 12px;
+  font-family: inherit;
 }
 
-/* ===== ВЫБОР МОДЕЛИ ===== */
-.models {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
+.select:focus, .input:focus { border-color: #a78bfa; }
+
+/* Кнопки-модели */
+.models { display: flex; gap: 8px; flex-wrap: wrap; }
 
 .model-btn {
   flex: 1;
@@ -162,9 +96,7 @@ body {
   transition: 0.2s;
 }
 
-.model-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
+.model-btn:hover { background: rgba(255, 255, 255, 0.1); }
 
 .model-btn.active {
   background: linear-gradient(135deg, #a78bfa, #60a5fa);
@@ -173,38 +105,68 @@ body {
   font-weight: 600;
 }
 
-/* ===== СООТНОШЕНИЯ ===== */
-.ratios {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
+/* Строка с файлом */
+.row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
-.ratio-btn {
-  flex: 1;
-  min-width: 60px;
-  padding: 10px;
+.file-btn {
+  display: inline-block;
+  padding: 10px 16px;
+  background: rgba(167, 139, 250, 0.15);
+  border: 1px solid rgba(167, 139, 250, 0.4);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #d1d5db;
+  color: #c4b5fd;
   font-size: 14px;
   cursor: pointer;
   transition: 0.2s;
 }
 
-.ratio-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+.file-btn:hover { background: rgba(167, 139, 250, 0.25); }
+
+.file-name {
+  font-size: 13px;
+  color: #9ca3af;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200px;
 }
 
-.ratio-btn.active {
-  background: linear-gradient(135deg, #a78bfa, #60a5fa);
-  border-color: transparent;
+/* Превью */
+.preview-wrap { position: relative; display: inline-block; max-width: 140px; }
+.preview { width: 100%; border-radius: 12px; display: block; }
+
+.remove-btn {
+  position: absolute;
+  top: -8px; right: -8px;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: #ef4444;
   color: white;
-  font-weight: 600;
+  cursor: pointer;
+  font-size: 12px;
 }
 
-/* ===== КНОПКА ГЕНЕРАЦИИ ===== */
+/* Чекбоксы */
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #d1d5db;
+  cursor: pointer;
+}
+
+.checkbox-row input { width: 18px; height: 18px; accent-color: #a78bfa; cursor: pointer; }
+
+/* Ползунок */
+.range {
+  width: 100%;
+  accent-color: #a78bfa;
+  cursor: pointer;
+}
+
+/* Кнопка генерации */
 .generate-btn {
   margin-top: 6px;
   padding: 16px;
@@ -219,18 +181,10 @@ body {
   transition: 0.3s;
 }
 
-.generate-btn:hover {
-  background-position: 100% 0;
-  transform: translateY(-1px);
-}
+.generate-btn:hover { background-position: 100% 0; transform: translateY(-1px); }
+.generate-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-.generate-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* ===== РЕЗУЛЬТАТ ===== */
+/* Результат */
 .result {
   margin-top: 10px;
   text-align: center;
@@ -240,27 +194,16 @@ body {
   border: 1px dashed rgba(255, 255, 255, 0.1);
 }
 
-.result-text {
-  color: #9ca3af;
-  font-size: 14px;
-}
+.result-text { color: #9ca3af; font-size: 14px; }
+.result-image-wrap img { max-width: 100%; border-radius: 12px; margin-top: 10px; }
 
-.result-image-wrap img {
-  max-width: 100%;
-  border-radius: 12px;
-  margin-top: 10px;
-}
+/* Утилиты */
+.hidden { display: none !important; }
 
-/* ===== УТИЛИТЫ ===== */
-.hidden {
-  display: none;
-}
-
-/* ===== АДАПТАЦИЯ ПОД ТЕЛЕФОН ===== */
+/* Адаптив */
 @media (max-width: 480px) {
   .logo { font-size: 32px; }
   .panel { padding: 18px; }
-  .textarea { min-height: 100px; }
-  .ratio-btn { font-size: 13px; padding: 8px; }
+  .textarea { min-height: 90px; }
   .model-btn { font-size: 12px; padding: 8px; min-width: 80px; }
 }
