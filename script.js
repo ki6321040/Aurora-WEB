@@ -33,7 +33,7 @@ const generateBtn       = document.getElementById('generateBtn');
 
 const resultEmpty       = document.getElementById('resultEmpty');
 const resultContent     = document.getElementById('resultContent');
-const resultImage       = document.getElementById('resultImage');
+const resultImages      = document.getElementById('resultImages');
 const resultMeta        = document.getElementById('resultMeta');
 const downloadCurrent   = document.getElementById('downloadCurrent');
 const clearResult       = document.getElementById('clearResult');
@@ -95,14 +95,13 @@ const MODELS = {
 };
 
 let selectedModel = 'nano-banana-2';
-let attachedImages = []; // массив объектов { id, file, url }
-let currentResult = null;
+let attachedImages = [];
+let currentResults = []; // массив { id, url, prompt, model }
 
 // ===== 4. ПРИМЕНЕНИЕ НАСТРОЕК МОДЕЛИ =====
 function applyModelSettings(modelKey) {
   const cfg = MODELS[modelKey];
 
-  // Разрешение
   if (cfg.resolutions) {
     resolutionBlock.classList.remove('hidden');
     resolutionSelect.innerHTML = cfg.resolutions
@@ -119,12 +118,10 @@ function applyModelSettings(modelKey) {
   webSearchRow.classList.toggle('hidden', !cfg.hasWebSearch);
   thinkingBlock.classList.toggle('hidden', !cfg.hasThinking);
 
-  // Обрезаем загруженные картинки, если их больше лимита
   if (attachedImages.length > cfg.maxImages) {
     attachedImages = attachedImages.slice(0, cfg.maxImages);
   }
 
-  // Обновляем UI загрузки
   updateDropZone();
   renderImagePreviews();
 }
@@ -155,14 +152,12 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// ===== 6. КОЛИЧЕСТВО ГЕНЕРАЦИЙ =====
+// ===== 6. ПОЛЗУНОК КОЛ-ВА =====
 numImages.addEventListener('input', () => {
   numImagesValue.textContent = numImages.value;
 });
 
-// ===== 7. ЗАГРУЗКА ИЗОБРАЖЕНИЙ (мульти) =====
-
-// Обновление внешнего вида drop-зоны и счётчика
+// ===== 7. ЗАГРУЗКА КАРТИНОК =====
 function updateDropZone() {
   const max = MODELS[selectedModel].maxImages;
   const current = attachedImages.length;
@@ -170,7 +165,6 @@ function updateDropZone() {
   imagesCounter.textContent = `${current} / ${max}`;
   dropZoneHint.textContent = `PNG, JPG, WEBP — максимум ${max} файлов`;
 
-  // Если достигнут лимит — блокируем drop-зону
   if (current >= max) {
     dropZone.classList.add('disabled');
   } else {
@@ -178,10 +172,8 @@ function updateDropZone() {
   }
 }
 
-// Отрисовка превью
 function renderImagePreviews() {
   imagesPreview.innerHTML = '';
-
   attachedImages.forEach(img => {
     const div = document.createElement('div');
     div.className = 'image-thumb';
@@ -193,7 +185,6 @@ function renderImagePreviews() {
   });
 }
 
-// Добавление файлов
 function addImages(files) {
   const cfg = MODELS[selectedModel];
   const max = cfg.maxImages;
@@ -227,20 +218,15 @@ function addImages(files) {
   });
 }
 
-// Клик по drop-зоне → открыть выбор файлов
-dropZone.addEventListener('click', () => {
-  imageInput.click();
-});
+dropZone.addEventListener('click', () => { imageInput.click(); });
 
-// Выбор файлов через input
 imageInput.addEventListener('change', () => {
   if (imageInput.files.length) {
     addImages(imageInput.files);
-    imageInput.value = ''; // чтобы можно было выбрать те же файлы повторно
+    imageInput.value = '';
   }
 });
 
-// Drag & drop
 ['dragenter', 'dragover'].forEach(evt => {
   dropZone.addEventListener(evt, (e) => {
     e.preventDefault();
@@ -262,11 +248,9 @@ dropZone.addEventListener('drop', (e) => {
   if (files.length) addImages(files);
 });
 
-// Удаление картинки по крестику
 imagesPreview.addEventListener('click', (e) => {
   const btn = e.target.closest('.thumb-remove');
   if (!btn) return;
-
   const id = btn.dataset.id;
   attachedImages = attachedImages.filter(img => img.id !== id);
   updateDropZone();
@@ -343,7 +327,7 @@ clearGallery.addEventListener('click', () => {
   updateGalleryCount();
 });
 
-// ===== 9. ГЕНЕРАЦИЯ (заглушка) =====
+// ===== 9. ГЕНЕРАЦИЯ (заглушка, теперь генерирует N штук) =====
 generateBtn.addEventListener('click', async () => {
   const prompt = promptInput.value.trim();
   if (!prompt) {
@@ -352,43 +336,40 @@ generateBtn.addEventListener('click', async () => {
     return;
   }
 
+  const count = parseInt(numImages.value, 10) || 1;
+
   generateBtn.disabled = true;
-  generateBtn.textContent = '⏳ Генерация...';
+  generateBtn.textContent = `⏳ Генерация ${count} изобр...`;
 
   await new Promise(resolve => setTimeout(resolve, 1200));
 
-  // Заглушка
-  const colorA = randomColor();
-  const colorB = randomColor();
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="600" height="600">
-      <defs>
-        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="${colorA}"/>
-          <stop offset="100%" stop-color="${colorB}"/>
-        </linearGradient>
-      </defs>
-      <rect width="600" height="600" fill="url(#g)"/>
-      <text x="300" y="290" fill="white" font-size="22" font-family="sans-serif"
-            text-anchor="middle" dominant-baseline="middle" font-weight="bold">
-        Aurora
-      </text>
-      <text x="300" y="325" fill="white" font-size="14" font-family="sans-serif"
-            text-anchor="middle" dominant-baseline="middle" opacity="0.85">
-        ${escapeHtml(prompt.slice(0, 40))}
-      </text>
-    </svg>
-  `;
-  const stubUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  // Очищаем старые результаты в правой панели
+  resultImages.innerHTML = '';
+  currentResults = [];
 
-  const id = addToGallery(stubUrl, prompt, selectedModel);
-  currentResult = { id, url: stubUrl, prompt, model: selectedModel };
+  // Создаём N заглушек
+  for (let i = 0; i < count; i++) {
+    const stubUrl = makeStub(prompt, i + 1, count);
 
+    // В галерею
+    const id = addToGallery(stubUrl, prompt, selectedModel);
+
+    // Запоминаем результат
+    currentResults.push({ id, url: stubUrl, prompt, model: selectedModel });
+
+    // В правую панель
+    const img = document.createElement('img');
+    img.src = stubUrl;
+    img.alt = `Результат ${i + 1}`;
+    resultImages.appendChild(img);
+  }
+
+  // Показать панель с результатами
   resultEmpty.classList.add('hidden');
   resultContent.classList.remove('hidden');
-  resultImage.src = stubUrl;
+
   resultMeta.innerHTML = `
-    <b>${MODELS[selectedModel].name}</b> • ${ratioSelect.value}<br>
+    <b>${MODELS[selectedModel].name}</b> • ${ratioSelect.value} • сгенерировано: <b>${count}</b><br>
     <span style="opacity:0.7">Входных изображений: ${attachedImages.length}</span>
   `;
 
@@ -396,19 +377,55 @@ generateBtn.addEventListener('click', async () => {
   generateBtn.textContent = '✨ Сгенерировать';
 });
 
+// Генерация заглушки (уникальный градиент для каждой)
+function makeStub(prompt, index, total) {
+  const colorA = randomColor();
+  const colorB = randomColor();
+
+  // Немного варьируем текст, чтобы картинки отличались
+  const label = total > 1 ? `${index} / ${total}` : 'Aurora';
+
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="600" height="600">
+      <defs>
+        <linearGradient id="g${index}" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="${colorA}"/>
+          <stop offset="100%" stop-color="${colorB}"/>
+        </linearGradient>
+      </defs>
+      <rect width="600" height="600" fill="url(#g${index})"/>
+      <text x="300" y="290" fill="white" font-size="22" font-family="sans-serif"
+            text-anchor="middle" dominant-baseline="middle" font-weight="bold">
+        ${escapeHtml(label)}
+      </text>
+      <text x="300" y="325" fill="white" font-size="14" font-family="sans-serif"
+            text-anchor="middle" dominant-baseline="middle" opacity="0.85">
+        ${escapeHtml(prompt.slice(0, 40))}
+      </text>
+    </svg>
+  `;
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+}
+
 // ===== 10. ДЕЙСТВИЯ С РЕЗУЛЬТАТОМ =====
 downloadCurrent.addEventListener('click', () => {
-  if (!currentResult) return;
-  const a = document.createElement('a');
-  a.href = currentResult.url;
-  a.download = `aurora_${currentResult.id}.png`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
+  if (currentResults.length === 0) return;
+
+  currentResults.forEach((res, i) => {
+    setTimeout(() => {
+      const a = document.createElement('a');
+      a.href = res.url;
+      a.download = `aurora_${res.id}.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }, i * 150); // задержка, чтобы браузер не проглотил быстрые клики
+  });
 });
 
 clearResult.addEventListener('click', () => {
-  currentResult = null;
+  currentResults = [];
+  resultImages.innerHTML = '';
   resultContent.classList.add('hidden');
   resultEmpty.classList.remove('hidden');
 });
