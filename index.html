@@ -21,15 +21,27 @@
       <textarea id="prompt" class="textarea"
         placeholder="Опишите, что вы хотите увидеть..."></textarea>
 
-      <!-- Модель -->
+      <!-- ===== ВЫБОР МОДЕЛИ (КАСТОМНЫЙ СЕЛЕКТ) ===== -->
       <label class="label">Модель</label>
-      <div class="models" id="models">
-        <button class="model-btn active" data-model="nano-banana-2">Nano Banana 2</button>
-        <button class="model-btn" data-model="nano-banana-pro">Nano Banana Pro</button>
-        <button class="model-btn" data-model="nano-banana-lite">Nano Banana Lite</button>
+      <div class="dropdown" id="modelDropdown">
+        <button type="button" class="dropdown-toggle" id="modelToggle">
+          <span id="modelLabel">Nano Banana 2</span>
+          <span class="dropdown-arrow">▾</span>
+        </button>
+        <ul class="dropdown-menu" id="modelMenu">
+          <li class="dropdown-item active" data-model="nano-banana-2">
+            <span class="dot dot-2"></span> Nano Banana 2
+          </li>
+          <li class="dropdown-item" data-model="nano-banana-pro">
+            <span class="dot dot-pro"></span> Nano Banana Pro
+          </li>
+          <li class="dropdown-item" data-model="nano-banana-lite">
+            <span class="dot dot-lite"></span> Nano Banana Lite
+          </li>
+        </ul>
       </div>
 
-      <!-- Входные изображения (общее) -->
+      <!-- Входные изображения -->
       <label class="label">Входные изображения</label>
       <div class="row">
         <label class="file-btn">
@@ -49,7 +61,7 @@
         <span>Перевод входящих данных</span>
       </label>
 
-      <!-- Соотношение (общее) -->
+      <!-- Соотношение -->
       <label class="label">Соотношение сторон</label>
       <select id="ratioSelect" class="select">
         <option value="auto">auto</option>
@@ -65,13 +77,13 @@
         <option value="9:21">9:21</option>
       </select>
 
-      <!-- Разрешение (для Nano Banana 2 и Pro) -->
+      <!-- Разрешение -->
       <div id="resolutionBlock" class="hidden">
         <label class="label">Разрешение</label>
         <select id="resolutionSelect" class="select"></select>
       </div>
 
-      <!-- Версия v1/v2 (только Lite) -->
+      <!-- Версия v1/v2 -->
       <div id="versionBlock" class="hidden">
         <label class="label">Версия нейросети</label>
         <select id="versionSelect" class="select">
@@ -80,24 +92,24 @@
         </select>
       </div>
 
-      <!-- Количество изображений (общее) -->
+      <!-- Количество изображений -->
       <label class="label">Количество изображений: <span id="numImagesValue">1</span></label>
       <input type="range" id="numImages" min="1" max="4" value="1" class="range">
 
-      <!-- Seed (для Nano Banana 2 и Lite) -->
+      <!-- Seed -->
       <div id="seedBlock" class="hidden">
         <label class="label">Случайное зерно (seed)</label>
         <input type="number" id="seedInput" class="input" placeholder="Оставьте пустым для случайного">
       </div>
 
-      <!-- Системный промт (только Lite) -->
+      <!-- Системный промт -->
       <div id="systemPromptBlock" class="hidden">
         <label class="label">Системный промт</label>
         <textarea id="systemPrompt" class="textarea" style="min-height:70px"
           placeholder="Дополнительные инструкции для модели"></textarea>
       </div>
 
-      <!-- Формат вывода (общее) -->
+      <!-- Формат вывода -->
       <label class="label">Формат вывода</label>
       <select id="formatSelect" class="select">
         <option value="png" selected>png</option>
@@ -105,13 +117,13 @@
         <option value="webp">webp</option>
       </select>
 
-      <!-- Веб-поиск (только Nano Banana 2) -->
+      <!-- Веб-поиск -->
       <label class="checkbox-row hidden" id="webSearchRow">
         <input type="checkbox" id="webSearch">
         <span>Веб-поиск</span>
       </label>
 
-      <!-- Уровень размышления (Nano Banana 2 и Lite) -->
+      <!-- Thinking level -->
       <div id="thinkingBlock" class="hidden">
         <label class="label">Уровень размышления модели</label>
         <select id="thinkingSelect" class="select">
@@ -133,6 +145,18 @@
       </div>
 
     </main>
+
+    <!-- ===== ГАЛЕРЕЯ ===== -->
+    <section class="gallery-section">
+      <div class="gallery-header">
+        <h2 class="gallery-title">🖼️ Галерея</h2>
+        <button id="clearGallery" class="clear-gallery" type="button">Очистить всё</button>
+      </div>
+      <div id="gallery" class="gallery">
+        <p class="gallery-empty" id="galleryEmpty">Пока ничего не сгенерировано</p>
+      </div>
+    </section>
+
   </div>
 
   <script src="script.js"></script>
