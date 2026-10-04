@@ -71,7 +71,11 @@ const saveProfileBtn    = document.getElementById('saveProfileBtn');
 
 const toast             = document.getElementById('toast');
 
-// ===== 2. НАСТРОЙКИ ПОЛЬЗОВАТЕЛЯ =====
+// ===== 2. КОНСТАНТЫ =====
+// Максимальный seed для API (2^32 - 1)
+const MAX_SEED = 4294967295;
+
+// ===== 3. НАСТРОЙКИ ПОЛЬЗОВАТЕЛЯ =====
 const DEFAULT_PROFILE = {
   name: 'Гость',
   theme: 'dark',
@@ -104,7 +108,7 @@ function saveProfile() {
   }
 }
 
-// ===== 3. ТАБЫ =====
+// ===== 4. ТАБЫ =====
 document.querySelectorAll('.tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -115,7 +119,7 @@ document.querySelectorAll('.tab').forEach(tab => {
   });
 });
 
-// ===== 4. КОНФИГУРАЦИЯ МОДЕЛЕЙ =====
+// ===== 5. КОНФИГУРАЦИЯ МОДЕЛЕЙ =====
 const MODELS = {
   'nano-banana-2': {
     name: 'Nano Banana 2',
@@ -160,7 +164,7 @@ let attachedImages = [];
 let currentResults = [];
 let galleryItems = [];
 
-// ===== 5. ПРИМЕНЕНИЕ НАСТРОЕК МОДЕЛИ =====
+// ===== 6. ПРИМЕНЕНИЕ НАСТРОЕК МОДЕЛИ =====
 function applyModelSettings(modelKey) {
   const cfg = MODELS[modelKey];
 
@@ -188,7 +192,7 @@ function applyModelSettings(modelKey) {
   renderImagePreviews();
 }
 
-// ===== 6. ВЫБОР МОДЕЛИ =====
+// ===== 7. ВЫБОР МОДЕЛИ =====
 modelToggle.addEventListener('click', (e) => {
   e.stopPropagation();
   modelDropdown.classList.toggle('open');
@@ -208,44 +212,51 @@ modelMenu.addEventListener('click', (e) => {
   modelDropdown.classList.remove('open');
 });
 
-// ===== 7. ПОЛЗУНОК =====
+// ===== 8. ПОЛЗУНОК =====
 numImages.addEventListener('input', () => {
   numImagesValue.textContent = numImages.value;
 });
 
-// ===== 8. SEED =====
+// ===== 9. SEED (ограничение 0 – 4294967295) =====
 
-// При вводе — чистим всё, что не цифры, и блокируем минус
 seedInput.addEventListener('input', () => {
   let val = seedInput.value;
 
   // Убираем всё, кроме цифр (минус, буквы, точки — удаляются)
   val = val.replace(/[^0-9]/g, '');
 
-  // Если в начале остался 0 и есть ещё цифры — убираем ведущий ноль
-  if (val.length > 1 && val.startsWith('0')) {
-    val = val.replace(/^0+/, '') || '0';
+  // Убираем ведущие нули (кроме одиночного "0")
+  if (val.length > 1) {
+    val = val.replace(/^0+/, '');
+  }
+
+  // Ограничиваем максимальным значением
+  if (val !== '') {
+    const num = parseInt(val, 10);
+    if (!isNaN(num) && num > MAX_SEED) {
+      val = String(MAX_SEED);
+    }
   }
 
   seedInput.value = val;
 });
 
-// Дополнительная защита от вставки минуса
+// Дополнительная защита от ввода мусора
 seedInput.addEventListener('keydown', (e) => {
-  if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '.') {
+  if (e.key === '-' || e.key === '+' || e.key === '.' || e.key === ',' ||
+      e.key === 'e' || e.key === 'E') {
     e.preventDefault();
   }
 });
 
-// Кнопка 🎲 — случайный seed
+// Кнопка 🎲 — случайный seed от 0 до MAX_SEED
 randomSeedBtn.addEventListener('click', () => {
-  // Диапазон 0 – 999999
-  const randomSeed = Math.floor(Math.random() * 1000000);
+  const randomSeed = Math.floor(Math.random() * (MAX_SEED + 1));
   seedInput.value = randomSeed;
   showToast(`Seed: ${randomSeed}`);
 });
 
-// ===== 9. ЗАГРУЗКА КАРТИНОК =====
+// ===== 10. ЗАГРУЗКА КАРТИНОК =====
 function updateDropZone() {
   const max = MODELS[selectedModel].maxImages;
   const current = attachedImages.length;
@@ -347,7 +358,7 @@ imagesPreview.addEventListener('click', (e) => {
   renderImagePreviews();
 });
 
-// ===== 10. ГАЛЕРЕЯ =====
+// ===== 11. ГАЛЕРЕЯ =====
 function addToGallery(url, prompt, model) {
   const id = 'img_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
   galleryItems.push({ id, url, prompt, model });
@@ -411,7 +422,7 @@ clearGallery.addEventListener('click', () => {
   updateGalleryCount();
 });
 
-// ===== 11. ГЕНЕРАЦИЯ =====
+// ===== 12. ГЕНЕРАЦИЯ (заглушка) =====
 generateBtn.addEventListener('click', async () => {
   const prompt = promptInput.value.trim();
   if (!prompt) {
@@ -421,53 +432,76 @@ generateBtn.addEventListener('click', async () => {
   }
 
   const count = parseInt(numImages.value, 10) || 1;
-  const seed = seedInput.value.trim();
+
+  // Финальная проверка seed
+  let seed = seedInput.value.trim();
+  if (seed !== '') {
+    const num = parseInt(seed, 10);
+    if (isNaN(num) || num < 0 || num > MAX_SEED) {
+      seed = '';
+      seedInput.value = '';
+    }
+  }
 
   generateBtn.disabled = true;
   generateBtn.textContent = `⏳ Генерация ${count} изобр...`;
 
-  await new Promise(resolve => setTimeout(resolve, 1200));
+  try {
+    // 🔽 ЗДЕСЬ ПОЗЖЕ БУДЕТ РЕАЛЬНЫЙ ЗАПРОС К API
+    await new Promise(resolve => setTimeout(resolve, 1200));
 
-  resultImages.innerHTML = '';
-  currentResults = [];
+    resultImages.innerHTML = '';
+    currentResults = [];
 
-  for (let i = 0; i < count; i++) {
-    const stubUrl = makeStub(prompt, i + 1, count);
+    for (let i = 0; i < count; i++) {
+      const stubUrl = makeStub(prompt, i + 1, count);
 
-    let id;
-    if (profile.autoSave) {
-      id = addToGallery(stubUrl, prompt, selectedModel);
-    } else {
-      id = 'tmp_' + Date.now() + '_' + i;
+      let id;
+      if (profile.autoSave) {
+        id = addToGallery(stubUrl, prompt, selectedModel);
+      } else {
+        id = 'tmp_' + Date.now() + '_' + i;
+      }
+
+      currentResults.push({ id, url: stubUrl, prompt, model: selectedModel });
+
+      const img = document.createElement('img');
+      img.src = stubUrl;
+      img.alt = `Результат ${i + 1}`;
+      resultImages.appendChild(img);
     }
 
-    currentResults.push({ id, url: stubUrl, prompt, model: selectedModel });
+    profile.generated += count;
+    saveProfile();
+    updateProfileStats();
 
-    const img = document.createElement('img');
-    img.src = stubUrl;
-    img.alt = `Результат ${i + 1}`;
-    resultImages.appendChild(img);
-  }
+    resultEmpty.classList.add('hidden');
+    resultContent.classList.remove('hidden');
 
-  profile.generated += count;
-  saveProfile();
-  updateProfileStats();
+    const seedText = seed ? `seed: ${seed}` : 'seed: случайный';
 
-  resultEmpty.classList.add('hidden');
-  resultContent.classList.remove('hidden');
+    resultMeta.innerHTML = `
+      <b>${MODELS[selectedModel].name}</b> • ${ratioSelect.value} • ${seedText}<br>
+      <span style="opacity:0.7">Сгенерировано: ${count} • Входных: ${attachedImages.length}</span>
+    `;
 
-  const seedText = seed ? `seed: ${seed}` : 'seed: случайный';
+    if (profile.notifications) {
+      showToast(`Готово! ${count} изображений`);
+    }
 
-  resultMeta.innerHTML = `
-    <b>${MODELS[selectedModel].name}</b> • ${ratioSelect.value} • ${seedText}<br>
-    <span style="opacity:0.7">Сгенерировано: ${count} • Входных: ${attachedImages.length}</span>
-  `;
-
-  generateBtn.disabled = false;
-  generateBtn.textContent = '✨ Сгенерировать';
-
-  if (profile.notifications) {
-    showToast(`Готово! ${count} изображений`);
+  } catch (err) {
+    console.error('Ошибка генерации:', err);
+    resultImages.innerHTML = `
+      <div style="color:#f87171; padding:16px;">
+        <h3 style="margin-bottom:8px;">Ошибка</h3>
+        <p>${escapeHtml(err.message || 'Что-то пошло не так.')}</p>
+      </div>
+    `;
+    resultEmpty.classList.add('hidden');
+    resultContent.classList.remove('hidden');
+  } finally {
+    generateBtn.disabled = false;
+    generateBtn.textContent = '✨ Сгенерировать';
   }
 });
 
@@ -498,7 +532,7 @@ function makeStub(prompt, index, total) {
   return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
 }
 
-// ===== 12. ДЕЙСТВИЯ С РЕЗУЛЬТАТОМ =====
+// ===== 13. ДЕЙСТВИЯ С РЕЗУЛЬТАТОМ =====
 downloadCurrent.addEventListener('click', () => {
   if (currentResults.length === 0) return;
   currentResults.forEach((res, i) => {
@@ -513,7 +547,7 @@ clearResult.addEventListener('click', () => {
   resultEmpty.classList.remove('hidden');
 });
 
-// ===== 13. ПРОФИЛЬ =====
+// ===== 14. ПРОФИЛЬ =====
 profileBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   profileMenu.classList.toggle('open');
@@ -620,7 +654,7 @@ function updateProfileStats() {
   profileStatsMenu.textContent = `${stats.generated} генераций`;
 }
 
-// ===== 14. ТОСТ =====
+// ===== 15. ТОСТ =====
 let toastTimeout;
 function showToast(message) {
   if (!profile.notifications) return;
@@ -636,7 +670,7 @@ function showToast(message) {
   }, 2500);
 }
 
-// ===== 15. УТИЛИТЫ =====
+// ===== 16. УТИЛИТЫ =====
 function downloadUrl(url, filename) {
   const a = document.createElement('a');
   a.href = url;
@@ -657,7 +691,7 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-// ===== 16. СТАРТ =====
+// ===== 17. СТАРТ =====
 applyProfile();
 applyModelSettings(selectedModel);
 renderGallery();
