@@ -10,6 +10,35 @@
 
   <div class="app">
 
+    <!-- ===== ШАПКА С ПРОФИЛЕМ ===== -->
+    <div class="topbar">
+      <div></div> <!-- заглушка для выравнивания -->
+      <div class="profile-wrap" id="profileWrap">
+        <button class="profile-btn" id="profileBtn" type="button">
+          <span class="profile-avatar" id="profileAvatar">A</span>
+        </button>
+        <div class="profile-menu" id="profileMenu">
+          <div class="profile-menu-header">
+            <span class="profile-avatar big" id="profileAvatarMenu">A</span>
+            <div>
+              <div class="profile-name" id="profileNameMenu">Гость</div>
+              <div class="profile-sub" id="profileStatsMenu">0 генераций</div>
+            </div>
+          </div>
+          <button class="profile-menu-item" data-action="open-profile">
+            <span>👤</span> Мой профиль
+          </button>
+          <button class="profile-menu-item" data-action="open-settings">
+            <span>⚙️</span> Настройки
+          </button>
+          <div class="profile-menu-divider"></div>
+          <button class="profile-menu-item danger" data-action="reset">
+            <span>🔄</span> Сбросить данные
+          </button>
+        </div>
+      </div>
+    </div>
+
     <header class="header">
       <h1 class="logo">Aurora</h1>
       <p class="subtitle">Генерация изображений с помощью ИИ</p>
@@ -24,17 +53,14 @@
     <section class="tab-content active" id="tab-generator">
       <div class="layout">
 
-        <!-- ЛЕВАЯ КОЛОНКА -->
         <div class="panel">
 
-          <!-- Промт -->
           <div class="field">
             <label class="label" for="prompt">Ваш промт</label>
             <textarea id="prompt" class="textarea"
               placeholder="Опишите, что вы хотите увидеть..."></textarea>
           </div>
 
-          <!-- Модель -->
           <div class="field">
             <label class="label">Модель</label>
             <div class="dropdown" id="modelDropdown">
@@ -56,7 +82,6 @@
             </div>
           </div>
 
-          <!-- Входные изображения -->
           <div class="field">
             <label class="label">
               Входные изображения
@@ -71,7 +96,6 @@
             <div id="imagesPreview" class="images-preview"></div>
           </div>
 
-          <!-- Перевод (Pro) -->
           <div class="field hidden" id="translateRow">
             <label class="checkbox-row">
               <input type="checkbox" id="translateInput">
@@ -79,7 +103,6 @@
             </label>
           </div>
 
-          <!-- Соотношение -->
           <div class="field">
             <label class="label">Соотношение сторон</label>
             <select id="ratioSelect" class="select">
@@ -97,13 +120,11 @@
             </select>
           </div>
 
-          <!-- Разрешение -->
           <div class="field hidden" id="resolutionBlock">
             <label class="label">Разрешение</label>
             <select id="resolutionSelect" class="select"></select>
           </div>
 
-          <!-- Версия -->
           <div class="field hidden" id="versionBlock">
             <label class="label">Версия нейросети</label>
             <select id="versionSelect" class="select">
@@ -112,26 +133,22 @@
             </select>
           </div>
 
-          <!-- Количество -->
           <div class="field">
             <label class="label">Количество изображений: <span id="numImagesValue">1</span></label>
             <input type="range" id="numImages" min="1" max="4" value="1" class="range">
           </div>
 
-          <!-- Seed -->
           <div class="field hidden" id="seedBlock">
             <label class="label">Случайное зерно (seed)</label>
             <input type="number" id="seedInput" class="input" placeholder="Пусто = случайное">
           </div>
 
-          <!-- Системный промт -->
           <div class="field hidden" id="systemPromptBlock">
             <label class="label">Системный промт</label>
             <textarea id="systemPrompt" class="textarea" style="min-height:70px"
               placeholder="Дополнительные инструкции"></textarea>
           </div>
 
-          <!-- Формат -->
           <div class="field">
             <label class="label">Формат вывода</label>
             <select id="formatSelect" class="select">
@@ -141,7 +158,6 @@
             </select>
           </div>
 
-          <!-- Веб-поиск -->
           <div class="field hidden" id="webSearchRow">
             <label class="checkbox-row">
               <input type="checkbox" id="webSearch">
@@ -149,7 +165,6 @@
             </label>
           </div>
 
-          <!-- Thinking -->
           <div class="field hidden" id="thinkingBlock">
             <label class="label">Уровень размышления модели</label>
             <select id="thinkingSelect" class="select">
@@ -165,7 +180,6 @@
 
         </div>
 
-        <!-- ПРАВАЯ КОЛОНКА: результат -->
         <div class="result-panel" id="resultPanel">
           <div class="result-empty" id="resultEmpty">
             <div class="result-empty-icon">🎨</div>
@@ -200,6 +214,75 @@
     </section>
 
   </div>
+
+  <!-- ===== МОДАЛЬНОЕ ОКНО ПРОФИЛЯ ===== -->
+  <div class="modal-overlay hidden" id="profileModal">
+    <div class="modal">
+      <button class="modal-close" id="modalClose" type="button">✕</button>
+
+      <!-- Шапка профиля -->
+      <div class="modal-header">
+        <div class="modal-avatar" id="modalAvatar">A</div>
+        <div class="modal-header-info">
+          <h2 class="modal-name" id="modalName">Гость</h2>
+          <p class="modal-sub" id="modalSub">Локальный профиль</p>
+        </div>
+      </div>
+
+      <!-- Статистика -->
+      <div class="stats">
+        <div class="stat-card">
+          <div class="stat-value" id="statGenerated">0</div>
+          <div class="stat-label">Сгенерировано</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statGallery">0</div>
+          <div class="stat-label">В галерее</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statDays">1</div>
+          <div class="stat-label">Дней с нами</div>
+        </div>
+      </div>
+
+      <!-- Настройки -->
+      <h3 class="modal-section">Настройки</h3>
+
+      <div class="field">
+        <label class="label" for="userName">Имя пользователя</label>
+        <input type="text" id="userName" class="input" placeholder="Введите имя" maxlength="30">
+      </div>
+
+      <div class="field">
+        <label class="label">Тема</label>
+        <select id="themeSelect" class="select">
+          <option value="dark" selected>🌙 Тёмная</option>
+          <option value="light">☀️ Светлая</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="checkbox-row">
+          <input type="checkbox" id="notificationsToggle" checked>
+          <span>Показывать уведомления</span>
+        </label>
+      </div>
+
+      <div class="field">
+        <label class="checkbox-row">
+          <input type="checkbox" id="autoSaveToggle" checked>
+          <span>Автосохранение в галерею</span>
+        </label>
+      </div>
+
+      <button class="generate-btn" id="saveProfileBtn" type="button">
+        💾 Сохранить
+      </button>
+    </div>
+  </div>
+
+  <!-- Уведомление-тост -->
+  <div class="toast hidden" id="toast"></div>
 
   <script src="script.js"></script>
 </body>
