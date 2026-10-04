@@ -10,7 +10,6 @@
 
   <div class="app">
 
-    <!-- Заголовок + табы -->
     <header class="header">
       <h1 class="logo">Aurora</h1>
       <p class="subtitle">Генерация изображений с помощью ИИ</p>
@@ -25,7 +24,7 @@
     <section class="tab-content active" id="tab-generator">
       <div class="layout">
 
-        <!-- ЛЕВАЯ КОЛОНКА: настройки -->
+        <!-- ЛЕВАЯ КОЛОНКА -->
         <div class="panel">
 
           <label class="label" for="prompt">Ваш промт</label>
@@ -52,19 +51,20 @@
             </ul>
           </div>
 
-          <!-- Входные изображения -->
-          <label class="label">Входные изображения</label>
-          <div class="row">
-            <label class="file-btn">
-              📎 Прикрепить
-              <input type="file" id="imageInput" accept="image/*" hidden>
-            </label>
-            <span id="fileName" class="file-name">Файл не выбран</span>
-          </div>
-          <div id="previewWrap" class="preview-wrap hidden">
-            <img id="preview" class="preview" alt="Превью">
-            <button id="removeImage" class="remove-btn" type="button">✕</button>
-          </div>
+          <!-- ===== ВХОДНЫЕ ИЗОБРАЖЕНИЯ (мультизагрузка) ===== -->
+          <label class="label">
+            Входные изображения
+            <span class="counter" id="imagesCounter">0 / 4</span>
+          </label>
+
+          <label class="drop-zone" id="dropZone">
+            <div class="drop-zone-icon">📎</div>
+            <div class="drop-zone-text">Нажмите или перетащите файлы</div>
+            <div class="drop-zone-hint" id="dropZoneHint">PNG, JPG, WEBP — максимум 4 файлов</div>
+            <input type="file" id="imageInput" accept="image/*" multiple hidden>
+          </label>
+
+          <div id="imagesPreview" class="images-preview"></div>
 
           <!-- Перевод (Pro) -->
           <label class="checkbox-row hidden" id="translateRow">
