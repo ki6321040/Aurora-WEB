@@ -142,6 +142,37 @@ body {
   font-size: 12px;
 }
 
+/* ===== ВЫБОР МОДЕЛИ ===== */
+.models {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.model-btn {
+  flex: 1;
+  min-width: 100px;
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #d1d5db;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.model-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.model-btn.active {
+  background: linear-gradient(135deg, #a78bfa, #60a5fa);
+  border-color: transparent;
+  color: white;
+  font-weight: 600;
+}
+
 /* ===== СООТНОШЕНИЯ ===== */
 .ratios {
   display: flex;
@@ -231,4 +262,5 @@ body {
   .panel { padding: 18px; }
   .textarea { min-height: 100px; }
   .ratio-btn { font-size: 13px; padding: 8px; }
+  .model-btn { font-size: 12px; padding: 8px; min-width: 80px; }
 }
