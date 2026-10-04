@@ -43,7 +43,67 @@ const galleryEmpty      = document.getElementById('galleryEmpty');
 const clearGallery      = document.getElementById('clearGallery');
 const galleryCount      = document.getElementById('galleryCount');
 
-// ===== 2. ТАБЫ =====
+// Профиль
+const profileWrap       = document.getElementById('profileWrap');
+const profileBtn        = document.getElementById('profileBtn');
+const profileMenu       = document.getElementById('profileMenu');
+const profileAvatar     = document.getElementById('profileAvatar');
+const profileAvatarMenu = document.getElementById('profileAvatarMenu');
+const profileNameMenu   = document.getElementById('profileNameMenu');
+const profileStatsMenu  = document.getElementById('profileStatsMenu');
+
+const profileModal      = document.getElementById('profileModal');
+const modalClose        = document.getElementById('modalClose');
+const modalAvatar       = document.getElementById('modalAvatar');
+const modalName         = document.getElementById('modalName');
+const modalSub          = document.getElementById('modalSub');
+
+const statGenerated     = document.getElementById('statGenerated');
+const statGallery       = document.getElementById('statGallery');
+const statDays          = document.getElementById('statDays');
+
+const userName          = document.getElementById('userName');
+const themeSelect       = document.getElementById('themeSelect');
+const notificationsToggle = document.getElementById('notificationsToggle');
+const autoSaveToggle    = document.getElementById('autoSaveToggle');
+const saveProfileBtn    = document.getElementById('saveProfileBtn');
+
+const toast             = document.getElementById('toast');
+
+// ===== 2. НАСТРОЙКИ ПОЛЬЗОВАТЕЛЯ (localStorage) =====
+const DEFAULT_PROFILE = {
+  name: 'Гость',
+  theme: 'dark',
+  notifications: true,
+  autoSave: true,
+  generated: 0,
+  firstVisit: Date.now()
+};
+
+let profile = loadProfile();
+
+function loadProfile() {
+  try {
+    const saved = localStorage.getItem('aurora_profile');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return { ...DEFAULT_PROFILE, ...parsed };
+    }
+  } catch (e) {
+    console.warn('Ошибка загрузки профиля', e);
+  }
+  return { ...DEFAULT_PROFILE };
+}
+
+function saveProfile() {
+  try {
+    localStorage.setItem('aurora_profile', JSON.stringify(profile));
+  } catch (e) {
+    console.warn('Ошибка сохранения профиля', e);
+  }
+}
+
+// ===== 3. ТАБЫ =====
 document.querySelectorAll('.tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -54,7 +114,7 @@ document.querySelectorAll('.tab').forEach(tab => {
   });
 });
 
-// ===== 3. КОНФИГУРАЦИЯ МОДЕЛЕЙ =====
+// ===== 4. КОНФИГУРАЦИЯ МОДЕЛЕЙ =====
 const MODELS = {
   'nano-banana-2': {
     name: 'Nano Banana 2',
@@ -99,11 +159,10 @@ let attachedImages = [];
 let currentResults = [];
 let galleryItems = [];
 
-// ===== 4. ПРИМЕНЕНИЕ НАСТРОЕК МОДЕЛИ =====
+// ===== 5. ПРИМЕНЕНИЕ НАСТРОЕК МОДЕЛИ =====
 function applyModelSettings(modelKey) {
   const cfg = MODELS[modelKey];
 
-  // Разрешение
   if (cfg.resolutions) {
     resolutionBlock.classList.remove('hidden');
     resolutionSelect.innerHTML = cfg.resolutions
@@ -120,7 +179,6 @@ function applyModelSettings(modelKey) {
   webSearchRow.classList.toggle('hidden', !cfg.hasWebSearch);
   thinkingBlock.classList.toggle('hidden', !cfg.hasThinking);
 
-  // Если загружено больше лимита — обрезаем
   if (attachedImages.length > cfg.maxImages) {
     attachedImages = attachedImages.slice(0, cfg.maxImages);
   }
@@ -129,7 +187,7 @@ function applyModelSettings(modelKey) {
   renderImagePreviews();
 }
 
-// ===== 5. ВЫБОР МОДЕЛИ =====
+// ===== 6. ВЫБОР МОДЕЛИ =====
 modelToggle.addEventListener('click', (e) => {
   e.stopPropagation();
   modelDropdown.classList.toggle('open');
@@ -149,18 +207,12 @@ modelMenu.addEventListener('click', (e) => {
   modelDropdown.classList.remove('open');
 });
 
-document.addEventListener('click', (e) => {
-  if (!modelDropdown.contains(e.target)) {
-    modelDropdown.classList.remove('open');
-  }
-});
-
-// ===== 6. ПОЛЗУНОК КОЛИЧЕСТВА =====
+// ===== 7. ПОЛЗУНОК =====
 numImages.addEventListener('input', () => {
   numImagesValue.textContent = numImages.value;
 });
 
-// ===== 7. ЗАГРУЗКА ИЗОБРАЖЕНИЙ =====
+// ===== 8. ЗАГРУЗКА КАРТИНОК =====
 function updateDropZone() {
   const max = MODELS[selectedModel].maxImages;
   const current = attachedImages.length;
@@ -194,14 +246,14 @@ function addImages(files) {
   const freeSlots = max - attachedImages.length;
 
   if (freeSlots <= 0) {
-    alert(`Максимум ${max} изображений для модели ${cfg.name}`);
+    showToast(`Максимум ${max} изображений`);
     return;
   }
 
   const filesToAdd = Array.from(files).slice(0, freeSlots);
 
   if (files.length > freeSlots) {
-    alert(`Можно добавить только ${freeSlots} файл(ов). Лимит модели ${cfg.name}: ${max}.`);
+    showToast(`Добавлено только ${freeSlots}. Лимит: ${max}`);
   }
 
   filesToAdd.forEach(file => {
@@ -262,7 +314,7 @@ imagesPreview.addEventListener('click', (e) => {
   renderImagePreviews();
 });
 
-// ===== 8. ГАЛЕРЕЯ =====
+// ===== 9. ГАЛЕРЕЯ =====
 function addToGallery(url, prompt, model) {
   const id = 'img_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
   galleryItems.push({ id, url, prompt, model });
@@ -296,6 +348,7 @@ function renderGallery() {
 
 function updateGalleryCount() {
   galleryCount.textContent = galleryItems.length;
+  updateProfileStats();
 }
 
 gallery.addEventListener('click', (e) => {
@@ -313,12 +366,7 @@ gallery.addEventListener('click', (e) => {
   }
 
   if (btn.dataset.action === 'download') {
-    const a = document.createElement('a');
-    a.href = item.url;
-    a.download = `aurora_${id}.png`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+    downloadUrl(item.url, `aurora_${id}.png`);
   }
 });
 
@@ -330,11 +378,11 @@ clearGallery.addEventListener('click', () => {
   updateGalleryCount();
 });
 
-// ===== 9. ГЕНЕРАЦИЯ (заглушка, N штук) =====
+// ===== 10. ГЕНЕРАЦИЯ (заглушка) =====
 generateBtn.addEventListener('click', async () => {
   const prompt = promptInput.value.trim();
   if (!prompt) {
-    alert('Пожалуйста, введите промт');
+    showToast('Введите промт');
     promptInput.focus();
     return;
   }
@@ -351,7 +399,14 @@ generateBtn.addEventListener('click', async () => {
 
   for (let i = 0; i < count; i++) {
     const stubUrl = makeStub(prompt, i + 1, count);
-    const id = addToGallery(stubUrl, prompt, selectedModel);
+
+    let id;
+    if (profile.autoSave) {
+      id = addToGallery(stubUrl, prompt, selectedModel);
+    } else {
+      id = 'tmp_' + Date.now() + '_' + i;
+    }
+
     currentResults.push({ id, url: stubUrl, prompt, model: selectedModel });
 
     const img = document.createElement('img');
@@ -359,6 +414,11 @@ generateBtn.addEventListener('click', async () => {
     img.alt = `Результат ${i + 1}`;
     resultImages.appendChild(img);
   }
+
+  // Обновляем статистику
+  profile.generated += count;
+  saveProfile();
+  updateProfileStats();
 
   resultEmpty.classList.add('hidden');
   resultContent.classList.remove('hidden');
@@ -370,9 +430,12 @@ generateBtn.addEventListener('click', async () => {
 
   generateBtn.disabled = false;
   generateBtn.textContent = '✨ Сгенерировать';
+
+  if (profile.notifications) {
+    showToast(`Готово! ${count} изображений`);
+  }
 });
 
-// Заглушка — цветной квадрат
 function makeStub(prompt, index, total) {
   const colorA = randomColor();
   const colorB = randomColor();
@@ -400,19 +463,11 @@ function makeStub(prompt, index, total) {
   return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
 }
 
-// ===== 10. ДЕЙСТВИЯ С РЕЗУЛЬТАТОМ =====
+// ===== 11. ДЕЙСТВИЯ С РЕЗУЛЬТАТОМ =====
 downloadCurrent.addEventListener('click', () => {
   if (currentResults.length === 0) return;
-
   currentResults.forEach((res, i) => {
-    setTimeout(() => {
-      const a = document.createElement('a');
-      a.href = res.url;
-      a.download = `aurora_${res.id}.png`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    }, i * 150);
+    setTimeout(() => downloadUrl(res.url, `aurora_${res.id}.png`), i * 150);
   });
 });
 
@@ -423,7 +478,148 @@ clearResult.addEventListener('click', () => {
   resultEmpty.classList.remove('hidden');
 });
 
-// ===== 11. УТИЛИТЫ =====
+// ===== 12. ПРОФИЛЬ =====
+
+// Открыть/закрыть меню профиля
+profileBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  profileMenu.classList.toggle('open');
+});
+
+document.addEventListener('click', (e) => {
+  if (!profileWrap.contains(e.target)) {
+    profileMenu.classList.remove('open');
+  }
+  if (!modelDropdown.contains(e.target)) {
+    modelDropdown.classList.remove('open');
+  }
+});
+
+// Клик по пункту меню профиля
+profileMenu.addEventListener('click', (e) => {
+  const item = e.target.closest('.profile-menu-item');
+  if (!item) return;
+
+  const action = item.dataset.action;
+  profileMenu.classList.remove('open');
+
+  if (action === 'open-profile' || action === 'open-settings') {
+    openProfileModal();
+  }
+
+  if (action === 'reset') {
+    if (confirm('Сбросить все данные? Имя, настройки и статистика вернутся к стандартным.')) {
+      profile = { ...DEFAULT_PROFILE, firstVisit: Date.now() };
+      saveProfile();
+      applyProfile();
+      showToast('Данные сброшены');
+    }
+  }
+});
+
+// Открыть модальное окно профиля
+function openProfileModal() {
+  userName.value = profile.name;
+  themeSelect.value = profile.theme;
+  notificationsToggle.checked = profile.notifications;
+  autoSaveToggle.checked = profile.autoSave;
+
+  updateProfileStats();
+  profileModal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+// Закрыть модальное окно
+function closeProfileModal() {
+  profileModal.classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+modalClose.addEventListener('click', closeProfileModal);
+
+profileModal.addEventListener('click', (e) => {
+  if (e.target === profileModal) closeProfileModal();
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !profileModal.classList.contains('hidden')) {
+    closeProfileModal();
+  }
+});
+
+// Сохранить профиль
+saveProfileBtn.addEventListener('click', () => {
+  profile.name = userName.value.trim() || 'Гость';
+  profile.theme = themeSelect.value;
+  profile.notifications = notificationsToggle.checked;
+  profile.autoSave = autoSaveToggle.checked;
+
+  saveProfile();
+  applyProfile();
+
+  showToast('Профиль сохранён');
+  closeProfileModal();
+});
+
+// Применить настройки профиля к интерфейсу
+function applyProfile() {
+  const initial = (profile.name || 'Гость').charAt(0).toUpperCase();
+  profileAvatar.textContent = initial;
+  profileAvatarMenu.textContent = initial;
+  modalAvatar.textContent = initial;
+
+  profileNameMenu.textContent = profile.name;
+  modalName.textContent = profile.name;
+
+  // Тема
+  if (profile.theme === 'light') {
+    document.body.classList.add('light-theme');
+  } else {
+    document.body.classList.remove('light-theme');
+  }
+}
+
+// Обновить статистику в профиле
+function updateProfileStats() {
+  const stats = {
+    generated: profile.generated,
+    gallery: galleryItems.length,
+    days: Math.max(1, Math.ceil((Date.now() - profile.firstVisit) / (1000 * 60 * 60 * 24)))
+  };
+
+  statGenerated.textContent = stats.generated;
+  statGallery.textContent = stats.gallery;
+  statDays.textContent = stats.days;
+
+  profileStatsMenu.textContent = `${stats.generated} генераций`;
+}
+
+// ===== 13. ТОСТ =====
+let toastTimeout;
+function showToast(message) {
+  if (!profile.notifications) return;
+
+  toast.textContent = message;
+  toast.classList.remove('hidden');
+  requestAnimationFrame(() => toast.classList.add('show'));
+
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.classList.add('hidden'), 300);
+  }, 2500);
+}
+
+// ===== 14. УТИЛИТЫ =====
+function downloadUrl(url, filename) {
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
 function randomColor() {
   const colors = ['#a78bfa', '#60a5fa', '#34d399', '#f472b6', '#fbbf24', '#f87171', '#22d3ee'];
   return colors[Math.floor(Math.random() * colors.length)];
@@ -435,7 +631,8 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-// ===== 12. СТАРТ =====
+// ===== 15. СТАРТ =====
+applyProfile();
 applyModelSettings(selectedModel);
 renderGallery();
 updateGalleryCount();
