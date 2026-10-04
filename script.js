@@ -5,7 +5,12 @@ const fileNameEl        = document.getElementById('fileName');
 const previewWrap       = document.getElementById('previewWrap');
 const previewImg        = document.getElementById('preview');
 const removeImage       = document.getElementById('removeImage');
-const modelsBox         = document.getElementById('models');
+
+const modelDropdown     = document.getElementById('modelDropdown');
+const modelToggle       = document.getElementById('modelToggle');
+const modelMenu         = document.getElementById('modelMenu');
+const modelLabel        = document.getElementById('modelLabel');
+
 const ratioSelect       = document.getElementById('ratioSelect');
 const resolutionBlock   = document.getElementById('resolutionBlock');
 const resolutionSelect  = document.getElementById('resolutionSelect');
@@ -27,6 +32,10 @@ const thinkingSelect    = document.getElementById('thinkingSelect');
 const generateBtn       = document.getElementById('generateBtn');
 const resultBox         = document.getElementById('result');
 const resultImageWrap   = document.getElementById('resultImageWrap');
+
+const gallery           = document.getElementById('gallery');
+const galleryEmpty      = document.getElementById('galleryEmpty');
+const clearGallery      = document.getElementById('clearGallery');
 
 // ===== 2. КОНФИГУРАЦИЯ МОДЕЛЕЙ =====
 const MODELS = {
@@ -72,7 +81,6 @@ let attachedImage = null;
 function applyModelSettings(modelKey) {
   const cfg = MODELS[modelKey];
 
-  // Разрешение
   if (cfg.resolutions) {
     resolutionBlock.classList.remove('hidden');
     resolutionSelect.innerHTML = cfg.resolutions
@@ -82,35 +90,41 @@ function applyModelSettings(modelKey) {
     resolutionBlock.classList.add('hidden');
   }
 
-  // Версия v1/v2
   versionBlock.classList.toggle('hidden', !cfg.hasVersion);
-
-  // Seed
   seedBlock.classList.toggle('hidden', !cfg.hasSeed);
-
-  // Системный промт
   systemPromptBlock.classList.toggle('hidden', !cfg.hasSystemPrompt);
-
-  // Перевод ввода
   translateRow.classList.toggle('hidden', !cfg.hasTranslate);
-
-  // Веб-поиск
   webSearchRow.classList.toggle('hidden', !cfg.hasWebSearch);
-
-  // Thinking level
   thinkingBlock.classList.toggle('hidden', !cfg.hasThinking);
 }
 
-// ===== 4. ПЕРЕКЛЮЧЕНИЕ МОДЕЛИ =====
-modelsBox.addEventListener('click', (e) => {
-  const btn = e.target.closest('.model-btn');
-  if (!btn) return;
+// ===== 4. ОТКРЫТИЕ / ЗАКРЫТИЕ ВЫПАДАЮЩЕГО СПИСКА =====
+modelToggle.addEventListener('click', (e) => {
+  e.stopPropagation();
+  modelDropdown.classList.toggle('open');
+});
 
-  document.querySelectorAll('.model-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+// Клик по элементу списка
+modelMenu.addEventListener('click', (e) => {
+  const item = e.target.closest('.dropdown-item');
+  if (!item) return;
 
-  selectedModel = btn.dataset.model;
+  modelMenu.querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('active'));
+  item.classList.add('active');
+
+  selectedModel = item.dataset.model;
+  modelLabel.textContent = MODELS[selectedModel].name;
+
   applyModelSettings(selectedModel);
+
+  modelDropdown.classList.remove('open');
+});
+
+// Клик вне — закрыть список
+document.addEventListener('click', (e) => {
+  if (!modelDropdown.contains(e.target)) {
+    modelDropdown.classList.remove('open');
+  }
 });
 
 // ===== 5. КОЛИЧЕСТВО ИЗОБРАЖЕНИЙ =====
@@ -143,7 +157,76 @@ removeImage.addEventListener('click', () => {
   previewImg.src = '';
 });
 
-// ===== 8. ГЕНЕРАЦИЯ (заглушка) =====
+// ===== 8. ГАЛЕРЕЯ =====
+
+// Массив сгенерированных картинок. Каждая запись: { id, url, prompt, model }
+let galleryItems = [];
+
+// Добавить картинку в галерею
+function addToGallery(url, prompt, model) {
+  const id = 'img_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+  galleryItems.push({ id, url, prompt, model });
+  renderGallery();
+}
+
+// Перерисовать всю галерею
+function renderGallery() {
+  // Очищаем всё кроме заглушки
+  gallery.querySelectorAll('.gallery-item').forEach(el => el.remove());
+
+  if (galleryItems.length === 0) {
+    galleryEmpty.style.display = 'block';
+    return;
+  }
+  galleryEmpty.style.display = 'none';
+
+  galleryItems.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'gallery-item';
+    div.innerHTML = `
+      <img src="${item.url}" alt="${escapeHtml(item.prompt)}" title="${escapeHtml(item.prompt)}">
+      <div class="gallery-actions">
+        <button class="gallery-btn" data-action="download" data-id="${item.id}" title="Скачать">⬇</button>
+        <button class="gallery-btn delete" data-action="delete" data-id="${item.id}" title="Удалить">🗑</button>
+      </div>
+    `;
+    gallery.appendChild(div);
+  });
+}
+
+// Обработка кликов в галерее (скачать / удалить)
+gallery.addEventListener('click', (e) => {
+  const btn = e.target.closest('.gallery-btn');
+  if (!btn) return;
+
+  const id = btn.dataset.id;
+  const item = galleryItems.find(i => i.id === id);
+  if (!item) return;
+
+  if (btn.dataset.action === 'delete') {
+    galleryItems = galleryItems.filter(i => i.id !== id);
+    renderGallery();
+  }
+
+  if (btn.dataset.action === 'download') {
+    const a = document.createElement('a');
+    a.href = item.url;
+    a.download = `aurora_${id}.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+});
+
+// Кнопка "Очистить всё"
+clearGallery.addEventListener('click', () => {
+  if (galleryItems.length === 0) return;
+  if (!confirm('Удалить все изображения из галереи?')) return;
+  galleryItems = [];
+  renderGallery();
+});
+
+// ===== 9. ГЕНЕРАЦИЯ (заглушка) =====
 generateBtn.addEventListener('click', async () => {
   const prompt = promptInput.value.trim();
   if (!prompt) {
@@ -158,40 +241,35 @@ generateBtn.addEventListener('click', async () => {
   // 🔽 Здесь позже будет запрос к API
   await new Promise(resolve => setTimeout(resolve, 1200));
 
-  // Собираем все параметры для наглядности
-  const params = {
-    model: selectedModel,
-    prompt: prompt,
-    ratio: ratioSelect.value,
-    resolution: MODELS[selectedModel].resolutions ? resolutionSelect.value : '—',
-    version: MODELS[selectedModel].hasVersion ? versionSelect.value : '—',
-    numImages: numImages.value,
-    seed: MODELS[selectedModel].hasSeed ? (seedInput.value || 'случайный') : '—',
-    systemPrompt: MODELS[selectedModel].hasSystemPrompt ? (systemPromptInput.value || '—') : '—',
-    format: formatSelect.value,
-    translate: MODELS[selectedModel].hasTranslate ? translateInput.checked : '—',
-    webSearch: MODELS[selectedModel].hasWebSearch ? webSearch.checked : '—',
-    thinking: MODELS[selectedModel].hasThinking ? (thinkingSelect.value || '—') : '—',
-    image: attachedImage ? 'прикреплена' : 'нет'
-  };
+  // Пока API нет — генерируем ЗАГЛУШКУ: цветной градиентный квадрат с текстом
+  const colorA = randomColor();
+  const colorB = randomColor();
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="${colorA}"/>
+          <stop offset="100%" stop-color="${colorB}"/>
+        </linearGradient>
+      </defs>
+      <rect width="400" height="400" fill="url(#g)"/>
+      <text x="200" y="200" fill="white" font-size="18" font-family="sans-serif"
+            text-anchor="middle" dominant-baseline="middle">
+        ${escapeHtml(prompt.slice(0, 30))}
+      </text>
+    </svg>
+  `;
+  const stubUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
 
+  // Добавляем в галерею
+  addToGallery(stubUrl, prompt, selectedModel);
+
+  // Показываем в блоке результата
   resultBox.classList.remove('hidden');
   resultImageWrap.innerHTML = `
-    <p style="color:#a78bfa; font-size:13px; margin-top:10px; text-align:left; line-height:1.6;">
-      <strong>API пока не подключён.</strong><br>
-      <b>Модель:</b> ${params.model}<br>
-      <b>Промт:</b> ${escapeHtml(params.prompt)}<br>
-      <b>Соотношение:</b> ${params.ratio}<br>
-      <b>Разрешение:</b> ${params.resolution}<br>
-      <b>Версия:</b> ${params.version}<br>
-      <b>Картинок:</b> ${params.numImages}<br>
-      <b>Seed:</b> ${params.seed}<br>
-      <b>Сист. промт:</b> ${escapeHtml(String(params.systemPrompt))}<br>
-      <b>Формат:</b> ${params.format}<br>
-      <b>Перевод:</b> ${params.translate}<br>
-      <b>Веб-поиск:</b> ${params.webSearch}<br>
-      <b>Thinking:</b> ${params.thinking}<br>
-      <b>Входное изображение:</b> ${params.image}
+    <img src="${stubUrl}" alt="Заглушка">
+    <p style="color:#a78bfa; font-size:12px; margin-top:8px;">
+      Заглушка. Модель: <b>${MODELS[selectedModel].name}</b>, соотношение: <b>${ratioSelect.value}</b>
     </p>
   `;
 
@@ -199,12 +277,19 @@ generateBtn.addEventListener('click', async () => {
   generateBtn.textContent = '✨ Сгенерировать';
 });
 
-// ===== 9. ЗАЩИТА ОТ HTML-ИНЪЕКЦИЙ =====
+// Случайный цвет
+function randomColor() {
+  const colors = ['#a78bfa', '#60a5fa', '#34d399', '#f472b6', '#fbbf24', '#f87171', '#22d3ee'];
+  return colors[Math.floor(Math.random() * colors.length)];
+}
+
+// ===== 10. УТИЛИТЫ =====
 function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
 }
 
-// ===== 10. СТАРТ =====
+// ===== 11. СТАРТ =====
 applyModelSettings(selectedModel);
+renderGallery();
