@@ -9,62 +9,124 @@
 <body>
 
   <div class="app">
-    <!-- Заголовок -->
     <header class="header">
       <h1 class="logo">Aurora</h1>
       <p class="subtitle">Генерация изображений с помощью ИИ</p>
     </header>
 
-    <!-- Основная панель -->
     <main class="panel">
 
-      <!-- Поле промта -->
+      <!-- Промт -->
       <label class="label" for="prompt">Ваш промт</label>
-      <textarea 
-        id="prompt" 
-        class="textarea" 
-        placeholder="Опишите, что вы хотите увидеть... Например: закат над горами в стиле аниме"
-      ></textarea>
+      <textarea id="prompt" class="textarea"
+        placeholder="Опишите, что вы хотите увидеть..."></textarea>
 
-      <!-- Прикрепление картинки к промту -->
+      <!-- Модель -->
+      <label class="label">Модель</label>
+      <div class="models" id="models">
+        <button class="model-btn active" data-model="nano-banana-2">Nano Banana 2</button>
+        <button class="model-btn" data-model="nano-banana-pro">Nano Banana Pro</button>
+        <button class="model-btn" data-model="nano-banana-lite">Nano Banana Lite</button>
+      </div>
+
+      <!-- Входные изображения (общее) -->
+      <label class="label">Входные изображения</label>
       <div class="row">
         <label class="file-btn">
-          📎 Прикрепить картинку
+          📎 Прикрепить
           <input type="file" id="imageInput" accept="image/*" hidden>
         </label>
         <span id="fileName" class="file-name">Файл не выбран</span>
       </div>
-
-      <!-- Превью загруженной картинки -->
       <div id="previewWrap" class="preview-wrap hidden">
         <img id="preview" class="preview" alt="Превью">
         <button id="removeImage" class="remove-btn" type="button">✕</button>
       </div>
 
-      <!-- Выбор модели -->
-      <label class="label">Модель</label>
-      <div class="models" id="models">
-        <button class="model-btn active" data-model="nano-banana-2">Nano Banana 2</button>
-        <button class="model-btn" data-model="nano-banana-2-lite">Nano Banana 2 Lite</button>
-        <button class="model-btn" data-model="nano-banana-pro">Nano Banana Pro</button>
-      </div>
+      <!-- Перевод ввода (только Pro) -->
+      <label class="checkbox-row hidden" id="translateRow">
+        <input type="checkbox" id="translateInput">
+        <span>Перевод входящих данных</span>
+      </label>
 
-      <!-- Выбор соотношения сторон -->
+      <!-- Соотношение (общее) -->
       <label class="label">Соотношение сторон</label>
-      <div class="ratios" id="ratios">
-        <button class="ratio-btn active" data-ratio="1:1">1:1</button>
-        <button class="ratio-btn" data-ratio="16:9">16:9</button>
-        <button class="ratio-btn" data-ratio="9:16">9:16</button>
-        <button class="ratio-btn" data-ratio="4:3">4:3</button>
-        <button class="ratio-btn" data-ratio="3:4">3:4</button>
+      <select id="ratioSelect" class="select">
+        <option value="auto">auto</option>
+        <option value="21:9">21:9</option>
+        <option value="16:9">16:9</option>
+        <option value="3:2">3:2</option>
+        <option value="4:3">4:3</option>
+        <option value="5:4">5:4</option>
+        <option value="1:1" selected>1:1</option>
+        <option value="4:5">4:5</option>
+        <option value="3:4">3:4</option>
+        <option value="9:16">9:16</option>
+        <option value="9:21">9:21</option>
+      </select>
+
+      <!-- Разрешение (для Nano Banana 2 и Pro) -->
+      <div id="resolutionBlock" class="hidden">
+        <label class="label">Разрешение</label>
+        <select id="resolutionSelect" class="select"></select>
       </div>
 
-      <!-- Кнопка генерации -->
+      <!-- Версия v1/v2 (только Lite) -->
+      <div id="versionBlock" class="hidden">
+        <label class="label">Версия нейросети</label>
+        <select id="versionSelect" class="select">
+          <option value="v1">v1</option>
+          <option value="v2">v2</option>
+        </select>
+      </div>
+
+      <!-- Количество изображений (общее) -->
+      <label class="label">Количество изображений: <span id="numImagesValue">1</span></label>
+      <input type="range" id="numImages" min="1" max="4" value="1" class="range">
+
+      <!-- Seed (для Nano Banana 2 и Lite) -->
+      <div id="seedBlock" class="hidden">
+        <label class="label">Случайное зерно (seed)</label>
+        <input type="number" id="seedInput" class="input" placeholder="Оставьте пустым для случайного">
+      </div>
+
+      <!-- Системный промт (только Lite) -->
+      <div id="systemPromptBlock" class="hidden">
+        <label class="label">Системный промт</label>
+        <textarea id="systemPrompt" class="textarea" style="min-height:70px"
+          placeholder="Дополнительные инструкции для модели"></textarea>
+      </div>
+
+      <!-- Формат вывода (общее) -->
+      <label class="label">Формат вывода</label>
+      <select id="formatSelect" class="select">
+        <option value="png" selected>png</option>
+        <option value="jpeg">jpeg</option>
+        <option value="webp">webp</option>
+      </select>
+
+      <!-- Веб-поиск (только Nano Banana 2) -->
+      <label class="checkbox-row hidden" id="webSearchRow">
+        <input type="checkbox" id="webSearch">
+        <span>Веб-поиск</span>
+      </label>
+
+      <!-- Уровень размышления (Nano Banana 2 и Lite) -->
+      <div id="thinkingBlock" class="hidden">
+        <label class="label">Уровень размышления модели</label>
+        <select id="thinkingSelect" class="select">
+          <option value="">Выбрать...</option>
+          <option value="minimal">minimal</option>
+          <option value="high">high</option>
+        </select>
+      </div>
+
+      <!-- Кнопка -->
       <button id="generateBtn" class="generate-btn" type="button">
         ✨ Сгенерировать
       </button>
 
-      <!-- Место для результата -->
+      <!-- Результат -->
       <div id="result" class="result hidden">
         <p class="result-text">Здесь появится изображение</p>
         <div id="resultImageWrap" class="result-image-wrap"></div>
