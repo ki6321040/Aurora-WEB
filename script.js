@@ -96,12 +96,14 @@ const MODELS = {
 
 let selectedModel = 'nano-banana-2';
 let attachedImages = [];
-let currentResults = []; // массив { id, url, prompt, model }
+let currentResults = [];
+let galleryItems = [];
 
 // ===== 4. ПРИМЕНЕНИЕ НАСТРОЕК МОДЕЛИ =====
 function applyModelSettings(modelKey) {
   const cfg = MODELS[modelKey];
 
+  // Разрешение
   if (cfg.resolutions) {
     resolutionBlock.classList.remove('hidden');
     resolutionSelect.innerHTML = cfg.resolutions
@@ -118,6 +120,7 @@ function applyModelSettings(modelKey) {
   webSearchRow.classList.toggle('hidden', !cfg.hasWebSearch);
   thinkingBlock.classList.toggle('hidden', !cfg.hasThinking);
 
+  // Если загружено больше лимита — обрезаем
   if (attachedImages.length > cfg.maxImages) {
     attachedImages = attachedImages.slice(0, cfg.maxImages);
   }
@@ -152,12 +155,12 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// ===== 6. ПОЛЗУНОК КОЛ-ВА =====
+// ===== 6. ПОЛЗУНОК КОЛИЧЕСТВА =====
 numImages.addEventListener('input', () => {
   numImagesValue.textContent = numImages.value;
 });
 
-// ===== 7. ЗАГРУЗКА КАРТИНОК =====
+// ===== 7. ЗАГРУЗКА ИЗОБРАЖЕНИЙ =====
 function updateDropZone() {
   const max = MODELS[selectedModel].maxImages;
   const current = attachedImages.length;
@@ -218,7 +221,9 @@ function addImages(files) {
   });
 }
 
-dropZone.addEventListener('click', () => { imageInput.click(); });
+dropZone.addEventListener('click', () => {
+  imageInput.click();
+});
 
 imageInput.addEventListener('change', () => {
   if (imageInput.files.length) {
@@ -258,8 +263,6 @@ imagesPreview.addEventListener('click', (e) => {
 });
 
 // ===== 8. ГАЛЕРЕЯ =====
-let galleryItems = [];
-
 function addToGallery(url, prompt, model) {
   const id = 'img_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
   galleryItems.push({ id, url, prompt, model });
@@ -327,7 +330,7 @@ clearGallery.addEventListener('click', () => {
   updateGalleryCount();
 });
 
-// ===== 9. ГЕНЕРАЦИЯ (заглушка, теперь генерирует N штук) =====
+// ===== 9. ГЕНЕРАЦИЯ (заглушка, N штук) =====
 generateBtn.addEventListener('click', async () => {
   const prompt = promptInput.value.trim();
   if (!prompt) {
@@ -343,28 +346,20 @@ generateBtn.addEventListener('click', async () => {
 
   await new Promise(resolve => setTimeout(resolve, 1200));
 
-  // Очищаем старые результаты в правой панели
   resultImages.innerHTML = '';
   currentResults = [];
 
-  // Создаём N заглушек
   for (let i = 0; i < count; i++) {
     const stubUrl = makeStub(prompt, i + 1, count);
-
-    // В галерею
     const id = addToGallery(stubUrl, prompt, selectedModel);
-
-    // Запоминаем результат
     currentResults.push({ id, url: stubUrl, prompt, model: selectedModel });
 
-    // В правую панель
     const img = document.createElement('img');
     img.src = stubUrl;
     img.alt = `Результат ${i + 1}`;
     resultImages.appendChild(img);
   }
 
-  // Показать панель с результатами
   resultEmpty.classList.add('hidden');
   resultContent.classList.remove('hidden');
 
@@ -377,12 +372,10 @@ generateBtn.addEventListener('click', async () => {
   generateBtn.textContent = '✨ Сгенерировать';
 });
 
-// Генерация заглушки (уникальный градиент для каждой)
+// Заглушка — цветной квадрат
 function makeStub(prompt, index, total) {
   const colorA = randomColor();
   const colorB = randomColor();
-
-  // Немного варьируем текст, чтобы картинки отличались
   const label = total > 1 ? `${index} / ${total}` : 'Aurora';
 
   const svg = `
@@ -419,7 +412,7 @@ downloadCurrent.addEventListener('click', () => {
       document.body.appendChild(a);
       a.click();
       a.remove();
-    }, i * 150); // задержка, чтобы браузер не проглотил быстрые клики
+    }, i * 150);
   });
 });
 
