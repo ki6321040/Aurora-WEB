@@ -12,7 +12,7 @@
 
     <!-- ===== ШАПКА С ПРОФИЛЕМ ===== -->
     <div class="topbar">
-      <div></div> <!-- заглушка для выравнивания -->
+      <div></div>
       <div class="profile-wrap" id="profileWrap">
         <button class="profile-btn" id="profileBtn" type="button">
           <span class="profile-avatar" id="profileAvatar">A</span>
@@ -138,9 +138,24 @@
             <input type="range" id="numImages" min="1" max="4" value="1" class="range">
           </div>
 
+          <!-- ===== SEED ===== -->
           <div class="field hidden" id="seedBlock">
-            <label class="label">Случайное зерно (seed)</label>
-            <input type="number" id="seedInput" class="input" placeholder="Пусто = случайное">
+            <label class="label">
+              Случайное зерно (seed)
+              <span class="label-hint">Пусто = случайно</span>
+            </label>
+            <div class="input-with-btn">
+              <input
+                type="number"
+                id="seedInput"
+                class="input"
+                placeholder="Например: 12345"
+                min="0"
+                step="1"
+              >
+              <button type="button" class="icon-btn" id="randomSeedBtn" title="Случайный seed">🎲</button>
+            </div>
+            <p class="field-hint">Одно и то же число = одинаковая картинка</p>
           </div>
 
           <div class="field hidden" id="systemPromptBlock">
@@ -220,7 +235,6 @@
     <div class="modal">
       <button class="modal-close" id="modalClose" type="button">✕</button>
 
-      <!-- Шапка профиля -->
       <div class="modal-header">
         <div class="modal-avatar" id="modalAvatar">A</div>
         <div class="modal-header-info">
@@ -229,7 +243,6 @@
         </div>
       </div>
 
-      <!-- Статистика -->
       <div class="stats">
         <div class="stat-card">
           <div class="stat-value" id="statGenerated">0</div>
@@ -245,7 +258,6 @@
         </div>
       </div>
 
-      <!-- Настройки -->
       <h3 class="modal-section">Настройки</h3>
 
       <div class="field">
@@ -281,7 +293,6 @@
     </div>
   </div>
 
-  <!-- Уведомление-тост -->
   <div class="toast hidden" id="toast"></div>
 
   <script src="script.js"></script>
