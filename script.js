@@ -20,6 +20,7 @@ const numImages         = document.getElementById('numImages');
 const numImagesValue    = document.getElementById('numImagesValue');
 const seedBlock         = document.getElementById('seedBlock');
 const seedInput         = document.getElementById('seedInput');
+const randomSeedBtn     = document.getElementById('randomSeedBtn');
 const systemPromptBlock = document.getElementById('systemPromptBlock');
 const systemPromptInput = document.getElementById('systemPrompt');
 const formatSelect      = document.getElementById('formatSelect');
@@ -70,7 +71,7 @@ const saveProfileBtn    = document.getElementById('saveProfileBtn');
 
 const toast             = document.getElementById('toast');
 
-// ===== 2. НАСТРОЙКИ ПОЛЬЗОВАТЕЛЯ (localStorage) =====
+// ===== 2. НАСТРОЙКИ ПОЛЬЗОВАТЕЛЯ =====
 const DEFAULT_PROFILE = {
   name: 'Гость',
   theme: 'dark',
@@ -212,7 +213,39 @@ numImages.addEventListener('input', () => {
   numImagesValue.textContent = numImages.value;
 });
 
-// ===== 8. ЗАГРУЗКА КАРТИНОК =====
+// ===== 8. SEED =====
+
+// При вводе — чистим всё, что не цифры, и блокируем минус
+seedInput.addEventListener('input', () => {
+  let val = seedInput.value;
+
+  // Убираем всё, кроме цифр (минус, буквы, точки — удаляются)
+  val = val.replace(/[^0-9]/g, '');
+
+  // Если в начале остался 0 и есть ещё цифры — убираем ведущий ноль
+  if (val.length > 1 && val.startsWith('0')) {
+    val = val.replace(/^0+/, '') || '0';
+  }
+
+  seedInput.value = val;
+});
+
+// Дополнительная защита от вставки минуса
+seedInput.addEventListener('keydown', (e) => {
+  if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '.') {
+    e.preventDefault();
+  }
+});
+
+// Кнопка 🎲 — случайный seed
+randomSeedBtn.addEventListener('click', () => {
+  // Диапазон 0 – 999999
+  const randomSeed = Math.floor(Math.random() * 1000000);
+  seedInput.value = randomSeed;
+  showToast(`Seed: ${randomSeed}`);
+});
+
+// ===== 9. ЗАГРУЗКА КАРТИНОК =====
 function updateDropZone() {
   const max = MODELS[selectedModel].maxImages;
   const current = attachedImages.length;
@@ -314,7 +347,7 @@ imagesPreview.addEventListener('click', (e) => {
   renderImagePreviews();
 });
 
-// ===== 9. ГАЛЕРЕЯ =====
+// ===== 10. ГАЛЕРЕЯ =====
 function addToGallery(url, prompt, model) {
   const id = 'img_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
   galleryItems.push({ id, url, prompt, model });
@@ -378,7 +411,7 @@ clearGallery.addEventListener('click', () => {
   updateGalleryCount();
 });
 
-// ===== 10. ГЕНЕРАЦИЯ (заглушка) =====
+// ===== 11. ГЕНЕРАЦИЯ =====
 generateBtn.addEventListener('click', async () => {
   const prompt = promptInput.value.trim();
   if (!prompt) {
@@ -388,6 +421,7 @@ generateBtn.addEventListener('click', async () => {
   }
 
   const count = parseInt(numImages.value, 10) || 1;
+  const seed = seedInput.value.trim();
 
   generateBtn.disabled = true;
   generateBtn.textContent = `⏳ Генерация ${count} изобр...`;
@@ -415,7 +449,6 @@ generateBtn.addEventListener('click', async () => {
     resultImages.appendChild(img);
   }
 
-  // Обновляем статистику
   profile.generated += count;
   saveProfile();
   updateProfileStats();
@@ -423,9 +456,11 @@ generateBtn.addEventListener('click', async () => {
   resultEmpty.classList.add('hidden');
   resultContent.classList.remove('hidden');
 
+  const seedText = seed ? `seed: ${seed}` : 'seed: случайный';
+
   resultMeta.innerHTML = `
-    <b>${MODELS[selectedModel].name}</b> • ${ratioSelect.value} • сгенерировано: <b>${count}</b><br>
-    <span style="opacity:0.7">Входных изображений: ${attachedImages.length}</span>
+    <b>${MODELS[selectedModel].name}</b> • ${ratioSelect.value} • ${seedText}<br>
+    <span style="opacity:0.7">Сгенерировано: ${count} • Входных: ${attachedImages.length}</span>
   `;
 
   generateBtn.disabled = false;
@@ -463,7 +498,7 @@ function makeStub(prompt, index, total) {
   return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
 }
 
-// ===== 11. ДЕЙСТВИЯ С РЕЗУЛЬТАТОМ =====
+// ===== 12. ДЕЙСТВИЯ С РЕЗУЛЬТАТОМ =====
 downloadCurrent.addEventListener('click', () => {
   if (currentResults.length === 0) return;
   currentResults.forEach((res, i) => {
@@ -478,9 +513,7 @@ clearResult.addEventListener('click', () => {
   resultEmpty.classList.remove('hidden');
 });
 
-// ===== 12. ПРОФИЛЬ =====
-
-// Открыть/закрыть меню профиля
+// ===== 13. ПРОФИЛЬ =====
 profileBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   profileMenu.classList.toggle('open');
@@ -495,7 +528,6 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// Клик по пункту меню профиля
 profileMenu.addEventListener('click', (e) => {
   const item = e.target.closest('.profile-menu-item');
   if (!item) return;
@@ -517,7 +549,6 @@ profileMenu.addEventListener('click', (e) => {
   }
 });
 
-// Открыть модальное окно профиля
 function openProfileModal() {
   userName.value = profile.name;
   themeSelect.value = profile.theme;
@@ -529,7 +560,6 @@ function openProfileModal() {
   document.body.style.overflow = 'hidden';
 }
 
-// Закрыть модальное окно
 function closeProfileModal() {
   profileModal.classList.add('hidden');
   document.body.style.overflow = '';
@@ -547,7 +577,6 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// Сохранить профиль
 saveProfileBtn.addEventListener('click', () => {
   profile.name = userName.value.trim() || 'Гость';
   profile.theme = themeSelect.value;
@@ -561,7 +590,6 @@ saveProfileBtn.addEventListener('click', () => {
   closeProfileModal();
 });
 
-// Применить настройки профиля к интерфейсу
 function applyProfile() {
   const initial = (profile.name || 'Гость').charAt(0).toUpperCase();
   profileAvatar.textContent = initial;
@@ -571,7 +599,6 @@ function applyProfile() {
   profileNameMenu.textContent = profile.name;
   modalName.textContent = profile.name;
 
-  // Тема
   if (profile.theme === 'light') {
     document.body.classList.add('light-theme');
   } else {
@@ -579,7 +606,6 @@ function applyProfile() {
   }
 }
 
-// Обновить статистику в профиле
 function updateProfileStats() {
   const stats = {
     generated: profile.generated,
@@ -594,7 +620,7 @@ function updateProfileStats() {
   profileStatsMenu.textContent = `${stats.generated} генераций`;
 }
 
-// ===== 13. ТОСТ =====
+// ===== 14. ТОСТ =====
 let toastTimeout;
 function showToast(message) {
   if (!profile.notifications) return;
@@ -610,7 +636,7 @@ function showToast(message) {
   }, 2500);
 }
 
-// ===== 14. УТИЛИТЫ =====
+// ===== 15. УТИЛИТЫ =====
 function downloadUrl(url, filename) {
   const a = document.createElement('a');
   a.href = url;
@@ -631,7 +657,7 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-// ===== 15. СТАРТ =====
+// ===== 16. СТАРТ =====
 applyProfile();
 applyModelSettings(selectedModel);
 renderGallery();
