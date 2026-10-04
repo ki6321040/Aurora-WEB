@@ -30,14 +30,31 @@ const webSearch         = document.getElementById('webSearch');
 const thinkingBlock     = document.getElementById('thinkingBlock');
 const thinkingSelect    = document.getElementById('thinkingSelect');
 const generateBtn       = document.getElementById('generateBtn');
-const resultBox         = document.getElementById('result');
-const resultImageWrap   = document.getElementById('resultImageWrap');
+
+const resultEmpty       = document.getElementById('resultEmpty');
+const resultContent     = document.getElementById('resultContent');
+const resultImage       = document.getElementById('resultImage');
+const resultMeta        = document.getElementById('resultMeta');
+const downloadCurrent   = document.getElementById('downloadCurrent');
+const clearResult       = document.getElementById('clearResult');
 
 const gallery           = document.getElementById('gallery');
 const galleryEmpty      = document.getElementById('galleryEmpty');
 const clearGallery      = document.getElementById('clearGallery');
+const galleryCount      = document.getElementById('galleryCount');
 
-// ===== 2. КОНФИГУРАЦИЯ МОДЕЛЕЙ =====
+// ===== 2. ТАБЫ =====
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+// ===== 3. КОНФИГУРАЦИЯ МОДЕЛЕЙ =====
 const MODELS = {
   'nano-banana-2': {
     name: 'Nano Banana 2',
@@ -76,8 +93,9 @@ const MODELS = {
 
 let selectedModel = 'nano-banana-2';
 let attachedImage = null;
+let currentResult = null; // { id, url, prompt, model }
 
-// ===== 3. ПРИМЕНЕНИЕ НАСТРОЕК МОДЕЛИ =====
+// ===== 4. ПРИМЕНЕНИЕ НАСТРОЕК МОДЕЛИ =====
 function applyModelSettings(modelKey) {
   const cfg = MODELS[modelKey];
 
@@ -98,13 +116,12 @@ function applyModelSettings(modelKey) {
   thinkingBlock.classList.toggle('hidden', !cfg.hasThinking);
 }
 
-// ===== 4. ОТКРЫТИЕ / ЗАКРЫТИЕ ВЫПАДАЮЩЕГО СПИСКА =====
+// ===== 5. ВЫПАДАЮЩИЙ СПИСОК МОДЕЛИ =====
 modelToggle.addEventListener('click', (e) => {
   e.stopPropagation();
   modelDropdown.classList.toggle('open');
 });
 
-// Клик по элементу списка
 modelMenu.addEventListener('click', (e) => {
   const item = e.target.closest('.dropdown-item');
   if (!item) return;
@@ -116,23 +133,21 @@ modelMenu.addEventListener('click', (e) => {
   modelLabel.textContent = MODELS[selectedModel].name;
 
   applyModelSettings(selectedModel);
-
   modelDropdown.classList.remove('open');
 });
 
-// Клик вне — закрыть список
 document.addEventListener('click', (e) => {
   if (!modelDropdown.contains(e.target)) {
     modelDropdown.classList.remove('open');
   }
 });
 
-// ===== 5. КОЛИЧЕСТВО ИЗОБРАЖЕНИЙ =====
+// ===== 6. КОЛИЧЕСТВО ИЗОБРАЖЕНИЙ =====
 numImages.addEventListener('input', () => {
   numImagesValue.textContent = numImages.value;
 });
 
-// ===== 6. ЗАГРУЗКА КАРТИНКИ =====
+// ===== 7. ЗАГРУЗКА КАРТИНКИ =====
 imageInput.addEventListener('change', () => {
   const file = imageInput.files[0];
   if (!file) return;
@@ -148,7 +163,6 @@ imageInput.addEventListener('change', () => {
   reader.readAsDataURL(file);
 });
 
-// ===== 7. УДАЛЕНИЕ КАРТИНКИ =====
 removeImage.addEventListener('click', () => {
   attachedImage = null;
   imageInput.value = '';
@@ -158,20 +172,17 @@ removeImage.addEventListener('click', () => {
 });
 
 // ===== 8. ГАЛЕРЕЯ =====
-
-// Массив сгенерированных картинок. Каждая запись: { id, url, prompt, model }
 let galleryItems = [];
 
-// Добавить картинку в галерею
 function addToGallery(url, prompt, model) {
   const id = 'img_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
   galleryItems.push({ id, url, prompt, model });
   renderGallery();
+  updateGalleryCount();
+  return id;
 }
 
-// Перерисовать всю галерею
 function renderGallery() {
-  // Очищаем всё кроме заглушки
   gallery.querySelectorAll('.gallery-item').forEach(el => el.remove());
 
   if (galleryItems.length === 0) {
@@ -194,7 +205,10 @@ function renderGallery() {
   });
 }
 
-// Обработка кликов в галерее (скачать / удалить)
+function updateGalleryCount() {
+  galleryCount.textContent = galleryItems.length;
+}
+
 gallery.addEventListener('click', (e) => {
   const btn = e.target.closest('.gallery-btn');
   if (!btn) return;
@@ -206,6 +220,7 @@ gallery.addEventListener('click', (e) => {
   if (btn.dataset.action === 'delete') {
     galleryItems = galleryItems.filter(i => i.id !== id);
     renderGallery();
+    updateGalleryCount();
   }
 
   if (btn.dataset.action === 'download') {
@@ -218,12 +233,12 @@ gallery.addEventListener('click', (e) => {
   }
 });
 
-// Кнопка "Очистить всё"
 clearGallery.addEventListener('click', () => {
   if (galleryItems.length === 0) return;
   if (!confirm('Удалить все изображения из галереи?')) return;
   galleryItems = [];
   renderGallery();
+  updateGalleryCount();
 });
 
 // ===== 9. ГЕНЕРАЦИЯ (заглушка) =====
@@ -241,55 +256,78 @@ generateBtn.addEventListener('click', async () => {
   // 🔽 Здесь позже будет запрос к API
   await new Promise(resolve => setTimeout(resolve, 1200));
 
-  // Пока API нет — генерируем ЗАГЛУШКУ: цветной градиентный квадрат с текстом
+  // Генерируем заглушку
   const colorA = randomColor();
   const colorB = randomColor();
   const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">
+    <svg xmlns="http://www.w3.org/2000/svg" width="600" height="600">
       <defs>
         <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stop-color="${colorA}"/>
           <stop offset="100%" stop-color="${colorB}"/>
         </linearGradient>
       </defs>
-      <rect width="400" height="400" fill="url(#g)"/>
-      <text x="200" y="200" fill="white" font-size="18" font-family="sans-serif"
-            text-anchor="middle" dominant-baseline="middle">
-        ${escapeHtml(prompt.slice(0, 30))}
+      <rect width="600" height="600" fill="url(#g)"/>
+      <text x="300" y="290" fill="white" font-size="22" font-family="sans-serif"
+            text-anchor="middle" dominant-baseline="middle" font-weight="bold">
+        Aurora
+      </text>
+      <text x="300" y="325" fill="white" font-size="14" font-family="sans-serif"
+            text-anchor="middle" dominant-baseline="middle" opacity="0.85">
+        ${escapeHtml(prompt.slice(0, 40))}
       </text>
     </svg>
   `;
   const stubUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
 
   // Добавляем в галерею
-  addToGallery(stubUrl, prompt, selectedModel);
+  const id = addToGallery(stubUrl, prompt, selectedModel);
 
-  // Показываем в блоке результата
-  resultBox.classList.remove('hidden');
-  resultImageWrap.innerHTML = `
-    <img src="${stubUrl}" alt="Заглушка">
-    <p style="color:#a78bfa; font-size:12px; margin-top:8px;">
-      Заглушка. Модель: <b>${MODELS[selectedModel].name}</b>, соотношение: <b>${ratioSelect.value}</b>
-    </p>
+  // Показываем в правой колонке
+  currentResult = { id, url: stubUrl, prompt, model: selectedModel };
+
+  resultEmpty.classList.add('hidden');
+  resultContent.classList.remove('hidden');
+  resultImage.src = stubUrl;
+  resultMeta.innerHTML = `
+    <b>${MODELS[selectedModel].name}</b> • ${ratioSelect.value}<br>
+    <span style="opacity:0.7">${escapeHtml(prompt.slice(0, 80))}</span>
   `;
 
   generateBtn.disabled = false;
   generateBtn.textContent = '✨ Сгенерировать';
 });
 
-// Случайный цвет
+// ===== 10. ДЕЙСТВИЯ С ТЕКУЩИМ РЕЗУЛЬТАТОМ =====
+downloadCurrent.addEventListener('click', () => {
+  if (!currentResult) return;
+  const a = document.createElement('a');
+  a.href = currentResult.url;
+  a.download = `aurora_${currentResult.id}.png`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+});
+
+clearResult.addEventListener('click', () => {
+  currentResult = null;
+  resultContent.classList.add('hidden');
+  resultEmpty.classList.remove('hidden');
+});
+
+// ===== 11. УТИЛИТЫ =====
 function randomColor() {
   const colors = ['#a78bfa', '#60a5fa', '#34d399', '#f472b6', '#fbbf24', '#f87171', '#22d3ee'];
   return colors[Math.floor(Math.random() * colors.length)];
 }
 
-// ===== 10. УТИЛИТЫ =====
 function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
 }
 
-// ===== 11. СТАРТ =====
+// ===== 12. СТАРТ =====
 applyModelSettings(selectedModel);
 renderGallery();
+updateGalleryCount();
