@@ -9,147 +9,174 @@
 <body>
 
   <div class="app">
+
+    <!-- Заголовок + табы -->
     <header class="header">
       <h1 class="logo">Aurora</h1>
       <p class="subtitle">Генерация изображений с помощью ИИ</p>
+
+      <nav class="tabs">
+        <button class="tab active" data-tab="generator">✨ Генерация</button>
+        <button class="tab" data-tab="gallery">🖼️ Галерея <span id="galleryCount" class="badge">0</span></button>
+      </nav>
     </header>
 
-    <main class="panel">
+    <!-- ===== ВКЛАДКА: ГЕНЕРАЦИЯ ===== -->
+    <section class="tab-content active" id="tab-generator">
+      <div class="layout">
 
-      <!-- Промт -->
-      <label class="label" for="prompt">Ваш промт</label>
-      <textarea id="prompt" class="textarea"
-        placeholder="Опишите, что вы хотите увидеть..."></textarea>
+        <!-- ЛЕВАЯ КОЛОНКА: настройки -->
+        <div class="panel">
 
-      <!-- ===== ВЫБОР МОДЕЛИ (КАСТОМНЫЙ СЕЛЕКТ) ===== -->
-      <label class="label">Модель</label>
-      <div class="dropdown" id="modelDropdown">
-        <button type="button" class="dropdown-toggle" id="modelToggle">
-          <span id="modelLabel">Nano Banana 2</span>
-          <span class="dropdown-arrow">▾</span>
-        </button>
-        <ul class="dropdown-menu" id="modelMenu">
-          <li class="dropdown-item active" data-model="nano-banana-2">
-            <span class="dot dot-2"></span> Nano Banana 2
-          </li>
-          <li class="dropdown-item" data-model="nano-banana-pro">
-            <span class="dot dot-pro"></span> Nano Banana Pro
-          </li>
-          <li class="dropdown-item" data-model="nano-banana-lite">
-            <span class="dot dot-lite"></span> Nano Banana Lite
-          </li>
-        </ul>
+          <label class="label" for="prompt">Ваш промт</label>
+          <textarea id="prompt" class="textarea"
+            placeholder="Опишите, что вы хотите увидеть..."></textarea>
+
+          <!-- Модель -->
+          <label class="label">Модель</label>
+          <div class="dropdown" id="modelDropdown">
+            <button type="button" class="dropdown-toggle" id="modelToggle">
+              <span id="modelLabel">Nano Banana 2</span>
+              <span class="dropdown-arrow">▾</span>
+            </button>
+            <ul class="dropdown-menu" id="modelMenu">
+              <li class="dropdown-item active" data-model="nano-banana-2">
+                <span class="dot dot-2"></span> Nano Banana 2
+              </li>
+              <li class="dropdown-item" data-model="nano-banana-pro">
+                <span class="dot dot-pro"></span> Nano Banana Pro
+              </li>
+              <li class="dropdown-item" data-model="nano-banana-lite">
+                <span class="dot dot-lite"></span> Nano Banana Lite
+              </li>
+            </ul>
+          </div>
+
+          <!-- Входные изображения -->
+          <label class="label">Входные изображения</label>
+          <div class="row">
+            <label class="file-btn">
+              📎 Прикрепить
+              <input type="file" id="imageInput" accept="image/*" hidden>
+            </label>
+            <span id="fileName" class="file-name">Файл не выбран</span>
+          </div>
+          <div id="previewWrap" class="preview-wrap hidden">
+            <img id="preview" class="preview" alt="Превью">
+            <button id="removeImage" class="remove-btn" type="button">✕</button>
+          </div>
+
+          <!-- Перевод (Pro) -->
+          <label class="checkbox-row hidden" id="translateRow">
+            <input type="checkbox" id="translateInput">
+            <span>Перевод входящих данных</span>
+          </label>
+
+          <!-- Соотношение -->
+          <label class="label">Соотношение сторон</label>
+          <select id="ratioSelect" class="select">
+            <option value="auto">auto</option>
+            <option value="21:9">21:9</option>
+            <option value="16:9">16:9</option>
+            <option value="3:2">3:2</option>
+            <option value="4:3">4:3</option>
+            <option value="5:4">5:4</option>
+            <option value="1:1" selected>1:1</option>
+            <option value="4:5">4:5</option>
+            <option value="3:4">3:4</option>
+            <option value="9:16">9:16</option>
+            <option value="9:21">9:21</option>
+          </select>
+
+          <!-- Разрешение -->
+          <div id="resolutionBlock" class="hidden">
+            <label class="label">Разрешение</label>
+            <select id="resolutionSelect" class="select"></select>
+          </div>
+
+          <!-- Версия -->
+          <div id="versionBlock" class="hidden">
+            <label class="label">Версия нейросети</label>
+            <select id="versionSelect" class="select">
+              <option value="v1">v1</option>
+              <option value="v2">v2</option>
+            </select>
+          </div>
+
+          <!-- Кол-во -->
+          <label class="label">Количество изображений: <span id="numImagesValue">1</span></label>
+          <input type="range" id="numImages" min="1" max="4" value="1" class="range">
+
+          <!-- Seed -->
+          <div id="seedBlock" class="hidden">
+            <label class="label">Случайное зерно (seed)</label>
+            <input type="number" id="seedInput" class="input" placeholder="Пусто = случайное">
+          </div>
+
+          <!-- Сист. промт -->
+          <div id="systemPromptBlock" class="hidden">
+            <label class="label">Системный промт</label>
+            <textarea id="systemPrompt" class="textarea" style="min-height:70px"
+              placeholder="Дополнительные инструкции"></textarea>
+          </div>
+
+          <!-- Формат -->
+          <label class="label">Формат вывода</label>
+          <select id="formatSelect" class="select">
+            <option value="png" selected>png</option>
+            <option value="jpeg">jpeg</option>
+            <option value="webp">webp</option>
+          </select>
+
+          <!-- Веб-поиск -->
+          <label class="checkbox-row hidden" id="webSearchRow">
+            <input type="checkbox" id="webSearch">
+            <span>Веб-поиск</span>
+          </label>
+
+          <!-- Thinking -->
+          <div id="thinkingBlock" class="hidden">
+            <label class="label">Уровень размышления модели</label>
+            <select id="thinkingSelect" class="select">
+              <option value="">Выбрать...</option>
+              <option value="minimal">minimal</option>
+              <option value="high">high</option>
+            </select>
+          </div>
+
+          <button id="generateBtn" class="generate-btn" type="button">
+            ✨ Сгенерировать
+          </button>
+
+        </div>
+
+        <!-- ПРАВАЯ КОЛОНКА: результат -->
+        <div class="result-panel" id="resultPanel">
+          <div class="result-empty" id="resultEmpty">
+            <div class="result-empty-icon">🎨</div>
+            <p class="result-empty-text">Здесь появится ваше изображение</p>
+            <p class="result-empty-hint">Введите промт и нажмите «Сгенерировать»</p>
+          </div>
+
+          <div class="result-content hidden" id="resultContent">
+            <img id="resultImage" class="result-image" alt="Результат">
+            <div class="result-info">
+              <p id="resultMeta" class="result-meta"></p>
+              <div class="result-actions">
+                <button id="downloadCurrent" class="action-btn">⬇ Скачать</button>
+                <button id="clearResult" class="action-btn">✕ Очистить</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
+    </section>
 
-      <!-- Входные изображения -->
-      <label class="label">Входные изображения</label>
-      <div class="row">
-        <label class="file-btn">
-          📎 Прикрепить
-          <input type="file" id="imageInput" accept="image/*" hidden>
-        </label>
-        <span id="fileName" class="file-name">Файл не выбран</span>
-      </div>
-      <div id="previewWrap" class="preview-wrap hidden">
-        <img id="preview" class="preview" alt="Превью">
-        <button id="removeImage" class="remove-btn" type="button">✕</button>
-      </div>
-
-      <!-- Перевод ввода (только Pro) -->
-      <label class="checkbox-row hidden" id="translateRow">
-        <input type="checkbox" id="translateInput">
-        <span>Перевод входящих данных</span>
-      </label>
-
-      <!-- Соотношение -->
-      <label class="label">Соотношение сторон</label>
-      <select id="ratioSelect" class="select">
-        <option value="auto">auto</option>
-        <option value="21:9">21:9</option>
-        <option value="16:9">16:9</option>
-        <option value="3:2">3:2</option>
-        <option value="4:3">4:3</option>
-        <option value="5:4">5:4</option>
-        <option value="1:1" selected>1:1</option>
-        <option value="4:5">4:5</option>
-        <option value="3:4">3:4</option>
-        <option value="9:16">9:16</option>
-        <option value="9:21">9:21</option>
-      </select>
-
-      <!-- Разрешение -->
-      <div id="resolutionBlock" class="hidden">
-        <label class="label">Разрешение</label>
-        <select id="resolutionSelect" class="select"></select>
-      </div>
-
-      <!-- Версия v1/v2 -->
-      <div id="versionBlock" class="hidden">
-        <label class="label">Версия нейросети</label>
-        <select id="versionSelect" class="select">
-          <option value="v1">v1</option>
-          <option value="v2">v2</option>
-        </select>
-      </div>
-
-      <!-- Количество изображений -->
-      <label class="label">Количество изображений: <span id="numImagesValue">1</span></label>
-      <input type="range" id="numImages" min="1" max="4" value="1" class="range">
-
-      <!-- Seed -->
-      <div id="seedBlock" class="hidden">
-        <label class="label">Случайное зерно (seed)</label>
-        <input type="number" id="seedInput" class="input" placeholder="Оставьте пустым для случайного">
-      </div>
-
-      <!-- Системный промт -->
-      <div id="systemPromptBlock" class="hidden">
-        <label class="label">Системный промт</label>
-        <textarea id="systemPrompt" class="textarea" style="min-height:70px"
-          placeholder="Дополнительные инструкции для модели"></textarea>
-      </div>
-
-      <!-- Формат вывода -->
-      <label class="label">Формат вывода</label>
-      <select id="formatSelect" class="select">
-        <option value="png" selected>png</option>
-        <option value="jpeg">jpeg</option>
-        <option value="webp">webp</option>
-      </select>
-
-      <!-- Веб-поиск -->
-      <label class="checkbox-row hidden" id="webSearchRow">
-        <input type="checkbox" id="webSearch">
-        <span>Веб-поиск</span>
-      </label>
-
-      <!-- Thinking level -->
-      <div id="thinkingBlock" class="hidden">
-        <label class="label">Уровень размышления модели</label>
-        <select id="thinkingSelect" class="select">
-          <option value="">Выбрать...</option>
-          <option value="minimal">minimal</option>
-          <option value="high">high</option>
-        </select>
-      </div>
-
-      <!-- Кнопка -->
-      <button id="generateBtn" class="generate-btn" type="button">
-        ✨ Сгенерировать
-      </button>
-
-      <!-- Результат -->
-      <div id="result" class="result hidden">
-        <p class="result-text">Здесь появится изображение</p>
-        <div id="resultImageWrap" class="result-image-wrap"></div>
-      </div>
-
-    </main>
-
-    <!-- ===== ГАЛЕРЕЯ ===== -->
-    <section class="gallery-section">
+    <!-- ===== ВКЛАДКА: ГАЛЕРЕЯ ===== -->
+    <section class="tab-content" id="tab-gallery">
       <div class="gallery-header">
-        <h2 class="gallery-title">🖼️ Галерея</h2>
+        <h2 class="gallery-title">Ваши работы</h2>
         <button id="clearGallery" class="clear-gallery" type="button">Очистить всё</button>
       </div>
       <div id="gallery" class="gallery">
