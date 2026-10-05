@@ -10,31 +10,48 @@
 
   <div class="app">
 
-    <!-- ===== ШАПКА С ПРОФИЛЕМ ===== -->
+    <!-- ===== ШАПКА С ПРОФИЛЕМ И АВТОРИЗАЦИЕЙ ===== -->
     <div class="topbar">
       <div></div>
-      <div class="profile-wrap" id="profileWrap">
-        <button class="profile-btn" id="profileBtn" type="button">
-          <span class="profile-avatar" id="profileAvatar">A</span>
-        </button>
-        <div class="profile-menu" id="profileMenu">
-          <div class="profile-menu-header">
-            <span class="profile-avatar big" id="profileAvatarMenu">A</span>
-            <div>
-              <div class="profile-name" id="profileNameMenu">Гость</div>
-              <div class="profile-sub" id="profileStatsMenu">0 генераций</div>
+
+      <div class="topbar-right">
+        <!-- Авторизация -->
+        <div class="auth-container">
+          <button id="authBtn" class="auth-btn" type="button">👤 Войти</button>
+
+          <div id="userMenu" class="user-menu hidden">
+            <div class="user-menu-header">
+              <span class="user-avatar" id="userAvatar">U</span>
+              <span class="user-email" id="userEmail">user@example.com</span>
             </div>
+            <button id="logoutBtn" class="user-menu-item" type="button">🚪 Выйти</button>
           </div>
-          <button class="profile-menu-item" data-action="open-profile">
-            <span>👤</span> Мой профиль
+        </div>
+
+        <!-- Локальный профиль (для настроек) -->
+        <div class="profile-wrap" id="profileWrap">
+          <button class="profile-btn" id="profileBtn" type="button">
+            <span class="profile-avatar" id="profileAvatar">A</span>
           </button>
-          <button class="profile-menu-item" data-action="open-settings">
-            <span>⚙️</span> Настройки
-          </button>
-          <div class="profile-menu-divider"></div>
-          <button class="profile-menu-item danger" data-action="reset">
-            <span>🔄</span> Сбросить данные
-          </button>
+          <div class="profile-menu" id="profileMenu">
+            <div class="profile-menu-header">
+              <span class="profile-avatar big" id="profileAvatarMenu">A</span>
+              <div>
+                <div class="profile-name" id="profileNameMenu">Гость</div>
+                <div class="profile-sub" id="profileStatsMenu">0 генераций</div>
+              </div>
+            </div>
+            <button class="profile-menu-item" data-action="open-profile">
+              <span>👤</span> Мой профиль
+            </button>
+            <button class="profile-menu-item" data-action="open-settings">
+              <span>⚙️</span> Настройки
+            </button>
+            <div class="profile-menu-divider"></div>
+            <button class="profile-menu-item danger" data-action="reset">
+              <span>🔄</span> Сбросить данные
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -138,22 +155,14 @@
             <input type="range" id="numImages" min="1" max="4" value="1" class="range">
           </div>
 
-          <!-- ===== SEED ===== -->
           <div class="field hidden" id="seedBlock">
             <label class="label">
               Случайное зерно (seed)
               <span class="label-hint">Пусто = случайно</span>
             </label>
             <div class="input-with-btn">
-              <input
-                type="number"
-                id="seedInput"
-                class="input"
-                placeholder="Например: 12345"
-                min="0"
-                max="4294967295"
-                step="1"
-              >
+              <input type="number" id="seedInput" class="input" placeholder="Например: 12345"
+                min="0" max="4294967295" step="1">
               <button type="button" class="icon-btn" id="randomSeedBtn" title="Случайный seed">🎲</button>
             </div>
             <p class="field-hint">Одно и то же число = одинаковая картинка. Максимум: 4 294 967 295</p>
@@ -294,8 +303,51 @@
     </div>
   </div>
 
+  <!-- ===== МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ ===== -->
+  <div class="modal-overlay hidden" id="authModal">
+    <div class="modal auth-modal">
+      <button class="modal-close" id="authModalClose" type="button">✕</button>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="login" type="button">Вход</button>
+        <button class="auth-tab" data-tab="register" type="button">Регистрация</button>
+      </div>
+
+      <form class="auth-form" id="loginForm">
+        <h3>Вход в Aurora</h3>
+        <div class="field">
+          <label class="label" for="loginEmail">Email</label>
+          <input type="email" id="loginEmail" class="input" required placeholder="you@example.com">
+        </div>
+        <div class="field">
+          <label class="label" for="loginPassword">Пароль</label>
+          <input type="password" id="loginPassword" class="input" required placeholder="••••••••">
+        </div>
+        <button type="submit" class="generate-btn">Войти</button>
+      </form>
+
+      <form class="auth-form hidden" id="registerForm">
+        <h3>Создать аккаунт</h3>
+        <div class="field">
+          <label class="label" for="registerEmail">Email</label>
+          <input type="email" id="registerEmail" class="input" required placeholder="you@example.com">
+        </div>
+        <div class="field">
+          <label class="label" for="registerPassword">Пароль</label>
+          <input type="password" id="registerPassword" class="input" required minlength="6" placeholder="Минимум 6 символов">
+        </div>
+        <button type="submit" class="generate-btn">Зарегистрироваться</button>
+      </form>
+
+      <p id="authMessage" class="auth-message"></p>
+    </div>
+  </div>
+
   <div class="toast hidden" id="toast"></div>
 
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
