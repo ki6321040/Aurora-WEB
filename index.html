@@ -8,17 +8,57 @@
 </head>
 <body>
 
-  <div class="app">
+  <!-- ===== ЭКРАН АВТОРИЗАЦИИ ===== -->
+  <div class="auth-screen" id="authScreen">
+    <div class="auth-screen-inner">
+      <h1 class="logo">Aurora</h1>
+      <p class="subtitle">Генерация изображений</p>
 
-    <!-- ===== ШАПКА С ПРОФИЛЕМ И АВТОРИЗАЦИЕЙ ===== -->
+      <div class="auth-card">
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-tab="login" type="button">Вход</button>
+          <button class="auth-tab" data-tab="register" type="button">Регистрация</button>
+        </div>
+
+        <form class="auth-form" id="loginForm">
+          <h3>Вход в Aurora</h3>
+          <div class="field">
+            <label class="label" for="loginEmail">Email</label>
+            <input type="email" id="loginEmail" class="input" required placeholder="you@example.com" autocomplete="email">
+          </div>
+          <div class="field">
+            <label class="label" for="loginPassword">Пароль</label>
+            <input type="password" id="loginPassword" class="input" required placeholder="••••••••" autocomplete="current-password">
+          </div>
+          <button type="submit" class="generate-btn">Войти</button>
+        </form>
+
+        <form class="auth-form hidden" id="registerForm">
+          <h3>Создать аккаунт</h3>
+          <div class="field">
+            <label class="label" for="registerEmail">Email</label>
+            <input type="email" id="registerEmail" class="input" required placeholder="you@example.com" autocomplete="email">
+          </div>
+          <div class="field">
+            <label class="label" for="registerPassword">Пароль</label>
+            <input type="password" id="registerPassword" class="input" required minlength="6" placeholder="Минимум 6 символов" autocomplete="new-password">
+          </div>
+          <button type="submit" class="generate-btn">Зарегистрироваться</button>
+        </form>
+
+        <p id="authMessage" class="auth-message"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ОСНОВНОЙ САЙТ ===== -->
+  <div class="app hidden" id="appMain">
+
     <div class="topbar">
       <div></div>
-
       <div class="topbar-right">
-        <!-- Авторизация -->
         <div class="auth-container">
-          <button id="authBtn" class="auth-btn" type="button">👤 Войти</button>
-
+          <button id="authBtn" class="auth-btn hidden" type="button">👤 Войти</button>
           <div id="userMenu" class="user-menu hidden">
             <div class="user-menu-header">
               <span class="user-avatar" id="userAvatar">U</span>
@@ -28,7 +68,6 @@
           </div>
         </div>
 
-        <!-- Локальный профиль (для настроек) -->
         <div class="profile-wrap" id="profileWrap">
           <button class="profile-btn" id="profileBtn" type="button">
             <span class="profile-avatar" id="profileAvatar">A</span>
@@ -58,24 +97,20 @@
 
     <header class="header">
       <h1 class="logo">Aurora</h1>
-      <p class="subtitle">Генерация изображений с помощью ИИ</p>
-
+      <p class="subtitle">Генерация изображений</p>
       <nav class="tabs">
         <button class="tab active" data-tab="generator">✨ Генерация</button>
         <button class="tab" data-tab="gallery">🖼️ Галерея <span id="galleryCount" class="badge">0</span></button>
       </nav>
     </header>
 
-    <!-- ===== ВКЛАДКА: ГЕНЕРАЦИЯ ===== -->
     <section class="tab-content active" id="tab-generator">
       <div class="layout">
-
         <div class="panel">
 
           <div class="field">
             <label class="label" for="prompt">Ваш промт</label>
-            <textarea id="prompt" class="textarea"
-              placeholder="Опишите, что вы хотите увидеть..."></textarea>
+            <textarea id="prompt" class="textarea" placeholder="Опишите, что вы хотите увидеть..."></textarea>
           </div>
 
           <div class="field">
@@ -86,24 +121,15 @@
                 <span class="dropdown-arrow">▾</span>
               </button>
               <ul class="dropdown-menu" id="modelMenu">
-                <li class="dropdown-item active" data-model="nano-banana-2">
-                  <span class="dot dot-2"></span> Nano Banana 2
-                </li>
-                <li class="dropdown-item" data-model="nano-banana-pro">
-                  <span class="dot dot-pro"></span> Nano Banana Pro
-                </li>
-                <li class="dropdown-item" data-model="nano-banana-lite">
-                  <span class="dot dot-lite"></span> Nano Banana Lite
-                </li>
+                <li class="dropdown-item active" data-model="nano-banana-2"><span class="dot dot-2"></span> Nano Banana 2</li>
+                <li class="dropdown-item" data-model="nano-banana-pro"><span class="dot dot-pro"></span> Nano Banana Pro</li>
+                <li class="dropdown-item" data-model="nano-banana-lite"><span class="dot dot-lite"></span> Nano Banana Lite</li>
               </ul>
             </div>
           </div>
 
           <div class="field">
-            <label class="label">
-              Входные изображения
-              <span class="counter" id="imagesCounter">0 / 4</span>
-            </label>
+            <label class="label">Входные изображения <span class="counter" id="imagesCounter">0 / 4</span></label>
             <label class="drop-zone" id="dropZone">
               <div class="drop-zone-icon">📎</div>
               <div class="drop-zone-text">Нажмите или перетащите файлы</div>
@@ -114,10 +140,7 @@
           </div>
 
           <div class="field hidden" id="translateRow">
-            <label class="checkbox-row">
-              <input type="checkbox" id="translateInput">
-              <span>Перевод входящих данных</span>
-            </label>
+            <label class="checkbox-row"><input type="checkbox" id="translateInput"><span>Перевод входящих данных</span></label>
           </div>
 
           <div class="field">
@@ -143,7 +166,7 @@
           </div>
 
           <div class="field hidden" id="versionBlock">
-            <label class="label">Версия нейросети</label>
+            <label class="label">Версия</label>
             <select id="versionSelect" class="select">
               <option value="v1">v1</option>
               <option value="v2">v2</option>
@@ -151,31 +174,26 @@
           </div>
 
           <div class="field">
-            <label class="label">Количество изображений: <span id="numImagesValue">1</span></label>
+            <label class="label">Количество: <span id="numImagesValue">1</span></label>
             <input type="range" id="numImages" min="1" max="4" value="1" class="range">
           </div>
 
           <div class="field hidden" id="seedBlock">
-            <label class="label">
-              Случайное зерно (seed)
-              <span class="label-hint">Пусто = случайно</span>
-            </label>
+            <label class="label">Seed <span class="label-hint">Пусто = случайно</span></label>
             <div class="input-with-btn">
-              <input type="number" id="seedInput" class="input" placeholder="Например: 12345"
-                min="0" max="4294967295" step="1">
+              <input type="number" id="seedInput" class="input" placeholder="Например: 12345" min="0" max="4294967295" step="1">
               <button type="button" class="icon-btn" id="randomSeedBtn" title="Случайный seed">🎲</button>
             </div>
-            <p class="field-hint">Одно и то же число = одинаковая картинка. Максимум: 4 294 967 295</p>
+            <p class="field-hint">Максимум: 4 294 967 295</p>
           </div>
 
           <div class="field hidden" id="systemPromptBlock">
             <label class="label">Системный промт</label>
-            <textarea id="systemPrompt" class="textarea" style="min-height:70px"
-              placeholder="Дополнительные инструкции"></textarea>
+            <textarea id="systemPrompt" class="textarea" style="min-height:70px" placeholder="Дополнительные инструкции"></textarea>
           </div>
 
           <div class="field">
-            <label class="label">Формат вывода</label>
+            <label class="label">Формат</label>
             <select id="formatSelect" class="select">
               <option value="png" selected>png</option>
               <option value="jpeg">jpeg</option>
@@ -184,14 +202,11 @@
           </div>
 
           <div class="field hidden" id="webSearchRow">
-            <label class="checkbox-row">
-              <input type="checkbox" id="webSearch">
-              <span>Веб-поиск</span>
-            </label>
+            <label class="checkbox-row"><input type="checkbox" id="webSearch"><span>Веб-поиск</span></label>
           </div>
 
           <div class="field hidden" id="thinkingBlock">
-            <label class="label">Уровень размышления модели</label>
+            <label class="label">Уровень размышления</label>
             <select id="thinkingSelect" class="select">
               <option value="">Выбрать...</option>
               <option value="minimal">minimal</option>
@@ -199,10 +214,7 @@
             </select>
           </div>
 
-          <button id="generateBtn" class="generate-btn" type="button">
-            ✨ Сгенерировать
-          </button>
-
+          <button id="generateBtn" class="generate-btn" type="button">✨ Сгенерировать</button>
         </div>
 
         <div class="result-panel" id="resultPanel">
@@ -211,7 +223,6 @@
             <p class="result-empty-text">Здесь появится ваше изображение</p>
             <p class="result-empty-hint">Введите промт и нажмите «Сгенерировать»</p>
           </div>
-
           <div class="result-content hidden" id="resultContent">
             <div id="resultImages" class="result-grid"></div>
             <div class="result-info">
@@ -223,11 +234,9 @@
             </div>
           </div>
         </div>
-
       </div>
     </section>
 
-    <!-- ===== ВКЛАДКА: ГАЛЕРЕЯ ===== -->
     <section class="tab-content" id="tab-gallery">
       <div class="gallery-header">
         <h2 class="gallery-title">Ваши работы</h2>
@@ -237,44 +246,29 @@
         <p class="gallery-empty" id="galleryEmpty">Пока ничего не сгенерировано</p>
       </div>
     </section>
-
   </div>
 
   <!-- ===== МОДАЛЬНОЕ ОКНО ПРОФИЛЯ ===== -->
   <div class="modal-overlay hidden" id="profileModal">
     <div class="modal">
       <button class="modal-close" id="modalClose" type="button">✕</button>
-
       <div class="modal-header">
         <div class="modal-avatar" id="modalAvatar">A</div>
         <div class="modal-header-info">
           <h2 class="modal-name" id="modalName">Гость</h2>
-          <p class="modal-sub" id="modalSub">Локальный профиль</p>
+          <p class="modal-sub" id="modalSub">Профиль</p>
         </div>
       </div>
-
       <div class="stats">
-        <div class="stat-card">
-          <div class="stat-value" id="statGenerated">0</div>
-          <div class="stat-label">Сгенерировано</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="statGallery">0</div>
-          <div class="stat-label">В галерее</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="statDays">1</div>
-          <div class="stat-label">Дней с нами</div>
-        </div>
+        <div class="stat-card"><div class="stat-value" id="statGenerated">0</div><div class="stat-label">Сгенерировано</div></div>
+        <div class="stat-card"><div class="stat-value" id="statGallery">0</div><div class="stat-label">В галерее</div></div>
+        <div class="stat-card"><div class="stat-value" id="statDays">1</div><div class="stat-label">Дней</div></div>
       </div>
-
       <h3 class="modal-section">Настройки</h3>
-
       <div class="field">
-        <label class="label" for="userName">Имя пользователя</label>
+        <label class="label" for="userName">Имя</label>
         <input type="text" id="userName" class="input" placeholder="Введите имя" maxlength="30">
       </div>
-
       <div class="field">
         <label class="label">Тема</label>
         <select id="themeSelect" class="select">
@@ -282,70 +276,18 @@
           <option value="light">☀️ Светлая</option>
         </select>
       </div>
-
       <div class="field">
-        <label class="checkbox-row">
-          <input type="checkbox" id="notificationsToggle" checked>
-          <span>Показывать уведомления</span>
-        </label>
+        <label class="checkbox-row"><input type="checkbox" id="notificationsToggle" checked><span>Уведомления</span></label>
       </div>
-
       <div class="field">
-        <label class="checkbox-row">
-          <input type="checkbox" id="autoSaveToggle" checked>
-          <span>Автосохранение в галерею</span>
-        </label>
+        <label class="checkbox-row"><input type="checkbox" id="autoSaveToggle" checked><span>Автосохранение</span></label>
       </div>
-
-      <button class="generate-btn" id="saveProfileBtn" type="button">
-        💾 Сохранить
-      </button>
-    </div>
-  </div>
-
-  <!-- ===== МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ ===== -->
-  <div class="modal-overlay hidden" id="authModal">
-    <div class="modal auth-modal">
-      <button class="modal-close" id="authModalClose" type="button">✕</button>
-
-      <div class="auth-tabs">
-        <button class="auth-tab active" data-tab="login" type="button">Вход</button>
-        <button class="auth-tab" data-tab="register" type="button">Регистрация</button>
-      </div>
-
-      <form class="auth-form" id="loginForm">
-        <h3>Вход в Aurora</h3>
-        <div class="field">
-          <label class="label" for="loginEmail">Email</label>
-          <input type="email" id="loginEmail" class="input" required placeholder="you@example.com">
-        </div>
-        <div class="field">
-          <label class="label" for="loginPassword">Пароль</label>
-          <input type="password" id="loginPassword" class="input" required placeholder="••••••••">
-        </div>
-        <button type="submit" class="generate-btn">Войти</button>
-      </form>
-
-      <form class="auth-form hidden" id="registerForm">
-        <h3>Создать аккаунт</h3>
-        <div class="field">
-          <label class="label" for="registerEmail">Email</label>
-          <input type="email" id="registerEmail" class="input" required placeholder="you@example.com">
-        </div>
-        <div class="field">
-          <label class="label" for="registerPassword">Пароль</label>
-          <input type="password" id="registerPassword" class="input" required minlength="6" placeholder="Минимум 6 символов">
-        </div>
-        <button type="submit" class="generate-btn">Зарегистрироваться</button>
-      </form>
-
-      <p id="authMessage" class="auth-message"></p>
+      <button class="generate-btn" id="saveProfileBtn" type="button">💾 Сохранить</button>
     </div>
   </div>
 
   <div class="toast hidden" id="toast"></div>
 
-  <!-- Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="auth.js"></script>
   <script src="script.js"></script>
