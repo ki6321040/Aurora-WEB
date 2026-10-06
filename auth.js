@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const SUPABASE_URL = 'https://txcceysqsvljptvdxwni.supabase.co/rest/v1/';
+  const SUPABASE_URL = 'https://txcceysqsvljptvdxxwni.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_u5dAfUcaLVfegeDdZkMZDg_nkCVirLh';
 
   let supabaseClient = null;
