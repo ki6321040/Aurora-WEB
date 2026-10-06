@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Aurora — генерация изображений</title>
+<title>Aurora — генерация</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="auth-screen" id="authScreen">
 <div class="auth-screen-inner">
 <h1 class="logo">Aurora</h1>
-<p class="subtitle">Генерация изображений</p>
+<p class="subtitle">Генерация контента</p>
 <div class="auth-card">
 <div class="auth-tabs">
 <button class="auth-tab active" data-tab="login" type="button">Вход</button>
@@ -71,13 +71,19 @@
 </div>
 <header class="header">
 <h1 class="logo">Aurora</h1>
-<p class="subtitle">Генерация изображений</p>
+<p class="subtitle">Генерация контента</p>
 <nav class="tabs">
-<button class="tab active" data-tab="generator">✨ Генерация</button>
-<button class="tab" data-tab="gallery">🖼️ Галерея <span id="galleryCount" class="badge">0</span></button>
+<button class="tab active" data-tab="image">🖼️ Изображения</button>
+<button class="tab" data-tab="video">🎬 Видео</button>
+<button class="tab" data-tab="3d">🧊 3D</button>
+<button class="tab" data-tab="text">✍️ Текст</button>
+<button class="tab" data-tab="audio">🔊 Аудио</button>
+<button class="tab" data-tab="gallery">📁 Галерея <span id="galleryCount" class="badge">0</span></button>
 </nav>
 </header>
-<section class="tab-content active" id="tab-generator">
+
+<!-- ============ ИЗОБРАЖЕНИЯ ============ -->
+<section class="tab-content active" id="tab-image">
 <div class="layout">
 <div class="panel">
 <div class="field">
@@ -194,6 +200,66 @@
 </div>
 </div>
 </section>
+
+<!-- ============ ВИДЕО (заглушка) ============ -->
+<section class="tab-content" id="tab-video">
+<div class="soon-panel">
+<div class="soon-icon">🎬</div>
+<h2 class="soon-title">Видео</h2>
+<p class="soon-text">Модели ИИ для этой задачи пока нет.</p>
+<p class="soon-hint">Скоро добавим генерацию видео.</p>
+</div>
+</section>
+
+<!-- ============ 3D (заглушка) ============ -->
+<section class="tab-content" id="tab-3d">
+<div class="soon-panel">
+<div class="soon-icon">🧊</div>
+<h2 class="soon-title">3D</h2>
+<p class="soon-text">Модели ИИ для этой задачи пока нет.</p>
+<p class="soon-hint">Скоро добавим генерацию 3D-моделей.</p>
+</div>
+</section>
+
+<!-- ============ ТЕКСТ (чат) ============ -->
+<section class="tab-content" id="tab-text">
+<div class="chat-layout">
+<aside class="chat-sidebar" id="chatSidebar">
+<button class="chat-new-btn" id="chatNewBtn" type="button">+ Новый чат</button>
+<div class="chat-list" id="chatList"></div>
+</aside>
+<div class="chat-main">
+<div class="chat-messages" id="chatMessages">
+<div class="chat-welcome">
+<div class="chat-welcome-icon">✍️</div>
+<h2>Чем помочь?</h2>
+<p>Задайте вопрос или прикрепите фото — начнём диалог.</p>
+</div>
+</div>
+<div class="chat-input-wrap">
+<label class="chat-attach-btn" title="Прикрепить фото">
+📎
+<input type="file" id="chatImageInput" accept="image/*" multiple hidden>
+</label>
+<div class="chat-attachments" id="chatAttachments"></div>
+<textarea id="chatInput" class="chat-input" placeholder="Напишите сообщение..." rows="1"></textarea>
+<button id="chatSendBtn" class="chat-send-btn" type="button">➤</button>
+</div>
+</div>
+</div>
+</section>
+
+<!-- ============ АУДИО (заглушка) ============ -->
+<section class="tab-content" id="tab-audio">
+<div class="soon-panel">
+<div class="soon-icon">🔊</div>
+<h2 class="soon-title">Аудио</h2>
+<p class="soon-text">Модели ИИ для этой задачи пока нет.</p>
+<p class="soon-hint">Скоро добавим озвучку и генерацию музыки.</p>
+</div>
+</section>
+
+<!-- ============ ГАЛЕРЕЯ ============ -->
 <section class="tab-content" id="tab-gallery">
 <div class="gallery-header">
 <h2 class="gallery-title">Ваши работы</h2>
@@ -203,6 +269,7 @@
 <p class="gallery-empty" id="galleryEmpty">Пока ничего не сгенерировано</p>
 </div>
 </section>
+
 </div>
 <div class="modal-overlay hidden" id="profileModal">
 <div class="modal">
