@@ -41,6 +41,7 @@
 <button type="submit" class="generate-btn">Зарегистрироваться</button>
 </form>
 <p id="authMessage" class="auth-message"></p>
+<button type="button" class="guest-btn" id="guestBtn">Войти как гость →</button>
 </div>
 </div>
 </div>
@@ -48,16 +49,6 @@
 <div class="topbar">
 <div></div>
 <div class="topbar-right">
-<div class="auth-container">
-<button id="authBtn" class="auth-btn hidden" type="button">👤 Войти</button>
-<div id="userMenu" class="user-menu hidden">
-<div class="user-menu-header">
-<span class="user-avatar" id="userAvatar">U</span>
-<span class="user-email" id="userEmail">user@example.com</span>
-</div>
-<button id="logoutBtn" class="user-menu-item" type="button">🚪 Выйти</button>
-</div>
-</div>
 <div class="profile-wrap" id="profileWrap">
 <button class="profile-btn" id="profileBtn" type="button">
 <span class="profile-avatar" id="profileAvatar">A</span>
@@ -250,7 +241,6 @@
 </div>
 </div>
 <div class="toast hidden" id="toast"></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
 <script src="script.js"></script>
 </body>
