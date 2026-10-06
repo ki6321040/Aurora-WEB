@@ -97,12 +97,23 @@
       });
     });
 
-    // ---------- ГАЛЕРЕЯ ----------
+    // ---------- SUB-TABS (внутри Изображений) ----------
+    document.querySelectorAll('.sub-tab').forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        document.querySelectorAll('.sub-tab').forEach(function (t) { t.classList.remove('active'); });
+        document.querySelectorAll('.sub-content').forEach(function (c) { c.classList.remove('active'); });
+        tab.classList.add('active');
+        const target = $('sub-' + tab.dataset.sub);
+        if (target) target.classList.add('active');
+      });
+    });
+
+    // ---------- ГАЛЕРЕЯ (только картинки) ----------
     let galleryItems = [];
 
-    function addToGallery(item) {
-      const id = 'item_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
-      galleryItems.push(Object.assign({ id: id }, item));
+    function addToGallery(url, prompt, model) {
+      const id = 'img_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+      galleryItems.push({ id: id, url: url, prompt: prompt, model: model });
       renderGallery();
       updateGalleryCount();
       return id;
@@ -123,19 +134,12 @@
       galleryItems.forEach(function (item) {
         const div = document.createElement('div');
         div.className = 'gallery-item';
-        if (item.type === 'image') {
-          div.innerHTML = '<img src="' + item.url + '" alt="">' +
-            '<div class="gallery-actions">' +
-              '<button class="gallery-btn" data-action="download" data-id="' + item.id + '" title="Скачать">⬇</button>' +
-              '<button class="gallery-btn delete" data-action="delete" data-id="' + item.id + '" title="Удалить">🗑</button>' +
-            '</div>';
-        } else if (item.type === 'text') {
-          div.innerHTML = '<div class="gallery-text">' + escapeHtml(item.text.slice(0, 200)) + '</div>' +
-            '<div class="gallery-actions">' +
-              '<button class="gallery-btn" data-action="copy" data-id="' + item.id + '" title="Копировать">📋</button>' +
-              '<button class="gallery-btn delete" data-action="delete" data-id="' + item.id + '" title="Удалить">🗑</button>' +
-            '</div>';
-        }
+        div.innerHTML =
+          '<img src="' + item.url + '" alt="' + escapeHtml(item.prompt) + '" title="' + escapeHtml(item.prompt) + '">' +
+          '<div class="gallery-actions">' +
+            '<button class="gallery-btn" data-action="download" data-id="' + item.id + '" title="Скачать">⬇</button>' +
+            '<button class="gallery-btn delete" data-action="delete" data-id="' + item.id + '" title="Удалить">🗑</button>' +
+          '</div>';
         gallery.appendChild(div);
       });
     }
@@ -158,17 +162,14 @@
         updateGalleryCount();
       }
       if (btn.dataset.action === 'download' && item.url) {
-        downloadUrl(item.url, 'aurora_' + id);
-      }
-      if (btn.dataset.action === 'copy' && item.text) {
-        navigator.clipboard.writeText(item.text).then(function () { showToast('Скопировано'); });
+        downloadUrl(item.url, 'aurora_' + id + '.png');
       }
     });
 
     if ($('clearGallery')) {
       $('clearGallery').addEventListener('click', function () {
         if (galleryItems.length === 0) return;
-        if (!confirm('Удалить все работы из галереи?')) return;
+        if (!confirm('Удалить все изображения из галереи?')) return;
         galleryItems = [];
         renderGallery();
         updateGalleryCount();
@@ -375,7 +376,7 @@
           for (let i = 0; i < count; i++) {
             const url = makeStub(prompt, i + 1, count);
             let id;
-            if (profile.autoSave) id = addToGallery({ type: 'image', url: url, prompt: prompt, model: selectedModel });
+            if (profile.autoSave) id = addToGallery(url, prompt, selectedModel);
             else id = 'tmp_' + Date.now() + '_' + i;
             currentResults.push({ id: id, url: url });
             const img = document.createElement('img');
@@ -620,7 +621,6 @@
       renderChatList();
       renderChatMessages();
 
-      // Заглушка ответа
       setTimeout(function () {
         const modelSelect = $('chatModelSelect');
         const modelName = modelSelect && modelSelect.value
@@ -635,9 +635,6 @@
         renderChatList();
         renderChatMessages();
 
-        if (profile.autoSave && text) {
-          addToGallery({ type: 'text', text: aiText, prompt: text });
-        }
         profile.generated += 1;
         saveProfileData();
         updateProfileStats();
