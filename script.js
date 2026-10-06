@@ -53,7 +53,7 @@
 
     function applyProfile() {
       const initial = (profile.name || 'Гость').charAt(0).toUpperCase();
-      ['profileAvatar', 'profileAvatarMenu', 'modalAvatar'].forEach(function (id) {
+      ['profileAvatarMenu', 'modalAvatar'].forEach(function (id) {
         const el = $(id); if (el) el.textContent = initial;
       });
       const pnm = $('profileNameMenu'); if (pnm) pnm.textContent = profile.name;
@@ -86,10 +86,10 @@
       }, 2500);
     }
 
-    // ---------- ТАБЫ ----------
-    document.querySelectorAll('.tab').forEach(function (tab) {
+    // ---------- ТАБЫ (сайдбар) ----------
+    document.querySelectorAll('.side-tab').forEach(function (tab) {
       tab.addEventListener('click', function () {
-        document.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('active'); });
+        document.querySelectorAll('.side-tab').forEach(function (t) { t.classList.remove('active'); });
         document.querySelectorAll('.tab-content').forEach(function (c) { c.classList.remove('active'); });
         tab.classList.add('active');
         const target = $('tab-' + tab.dataset.tab);
@@ -123,7 +123,6 @@
       galleryItems.forEach(function (item) {
         const div = document.createElement('div');
         div.className = 'gallery-item';
-
         if (item.type === 'image') {
           div.innerHTML = '<img src="' + item.url + '" alt="">' +
             '<div class="gallery-actions">' +
@@ -440,7 +439,7 @@
     }
 
     // ============================================================
-    // ЧАТ (вкладка Текст)
+    // ЧАТ
     // ============================================================
     const CHAT_STORAGE = 'aurora_chats_v1';
     let chats = [];
@@ -457,12 +456,8 @@
     function saveChats() {
       try { localStorage.setItem(CHAT_STORAGE, JSON.stringify(chats)); } catch (e) {}
     }
-    function newChatId() {
-      return 'chat_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
-    }
-    function getActiveChat() {
-      return chats.find(function (c) { return c.id === activeChatId; }) || null;
-    }
+    function newChatId() { return 'chat_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6); }
+    function getActiveChat() { return chats.find(function (c) { return c.id === activeChatId; }) || null; }
 
     function renderChatList() {
       const list = $('chatList'); if (!list) return;
@@ -487,7 +482,6 @@
       const wrap = $('chatMessages'); if (!wrap) return;
       const chat = getActiveChat();
       wrap.innerHTML = '';
-
       if (!chat || chat.messages.length === 0) {
         wrap.innerHTML =
           '<div class="chat-welcome">' +
@@ -497,7 +491,6 @@
           '</div>';
         return;
       }
-
       chat.messages.forEach(function (m) {
         const div = document.createElement('div');
         div.className = 'chat-msg ' + (m.role === 'user' ? 'user' : 'ai');
@@ -511,7 +504,6 @@
         div.innerHTML = html;
         wrap.appendChild(div);
       });
-
       wrap.scrollTop = wrap.scrollHeight;
     }
 
@@ -524,11 +516,8 @@
     if ($('chatNewBtn')) {
       $('chatNewBtn').addEventListener('click', function () {
         const chat = {
-          id: newChatId(),
-          title: 'Новый чат',
-          messages: [],
-          createdAt: Date.now(),
-          updatedAt: Date.now()
+          id: newChatId(), title: 'Новый чат', messages: [],
+          createdAt: Date.now(), updatedAt: Date.now()
         };
         chats.push(chat);
         saveChats();
@@ -543,9 +532,7 @@
           const id = delBtn.dataset.del;
           chats = chats.filter(function (c) { return c.id !== id; });
           if (activeChatId === id) activeChatId = chats.length ? chats[0].id : null;
-          saveChats();
-          renderChatList();
-          renderChatMessages();
+          saveChats(); renderChatList(); renderChatMessages();
           return;
         }
         const item = e.target.closest('.chat-list-item');
@@ -553,7 +540,17 @@
       });
     }
 
-    // Прикрепление фото в чате
+    if ($('chatClearBtn')) {
+      $('chatClearBtn').addEventListener('click', function () {
+        const chat = getActiveChat();
+        if (!chat || chat.messages.length === 0) return;
+        if (!confirm('Очистить сообщения в этом чате?')) return;
+        chat.messages = [];
+        chat.updatedAt = Date.now();
+        saveChats(); renderChatMessages();
+      });
+    }
+
     if ($('chatImageInput')) {
       $('chatImageInput').addEventListener('change', function () {
         Array.from($('chatImageInput').files).forEach(function (file) {
@@ -589,7 +586,6 @@
       });
     }
 
-    // Отправка сообщения
     function sendChatMessage() {
       const input = $('chatInput'); if (!input) return;
       const text = input.value.trim();
@@ -598,8 +594,8 @@
       let chat = getActiveChat();
       if (!chat) {
         chat = {
-          id: newChatId(), title: 'Новый чат',
-          messages: [], createdAt: Date.now(), updatedAt: Date.now()
+          id: newChatId(), title: 'Новый чат', messages: [],
+          createdAt: Date.now(), updatedAt: Date.now()
         };
         chats.push(chat);
         activeChatId = chat.id;
@@ -624,10 +620,15 @@
       renderChatList();
       renderChatMessages();
 
-      // Заглушка ответа ИИ
+      // Заглушка ответа
       setTimeout(function () {
-        const aiText = 'Это заглушка. Когда подключим API — здесь будет ответ модели на ваш запрос: «' +
+        const modelSelect = $('chatModelSelect');
+        const modelName = modelSelect && modelSelect.value
+          ? modelSelect.options[modelSelect.selectedIndex].text
+          : 'модель';
+        const aiText = '🤖 ' + modelName + ' пока не подключена. Когда подключим API — здесь будет ответ модели на ваш запрос: «' +
           (text || '(фото)').slice(0, 80) + '»';
+
         chat.messages.push({ role: 'assistant', text: aiText });
         chat.updatedAt = Date.now();
         saveChats();
@@ -653,7 +654,6 @@
           sendChatMessage();
         }
       });
-      // Автоувеличение высоты textarea
       $('chatInput').addEventListener('input', function () {
         this.style.height = 'auto';
         this.style.height = Math.min(this.scrollHeight, 160) + 'px';
@@ -661,7 +661,7 @@
     }
 
     // ============================================================
-    // ПРОФИЛЬ (меню, модалка)
+    // ПРОФИЛЬ
     // ============================================================
     if ($('profileBtn')) {
       $('profileBtn').addEventListener('click', function (e) {
@@ -686,9 +686,7 @@
         if (action === 'reset') {
           if (confirm('Сбросить все данные?')) {
             profile = Object.assign({}, DEFAULT_PROFILE, { firstVisit: Date.now() });
-            saveProfileData();
-            applyProfile();
-            showToast('Данные сброшены');
+            saveProfileData(); applyProfile(); showToast('Данные сброшены');
           }
         }
       });
@@ -723,8 +721,7 @@
         profile.theme = $('themeSelect') ? $('themeSelect').value : 'dark';
         profile.notifications = $('notificationsToggle') ? $('notificationsToggle').checked : true;
         profile.autoSave = $('autoSaveToggle') ? $('autoSaveToggle').checked : true;
-        saveProfileData();
-        applyProfile();
+        saveProfileData(); applyProfile();
         showToast('Профиль сохранён');
         closeProfileModal();
       });
