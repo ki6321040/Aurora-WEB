@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Aurora — генерация изображений</title>
+<title>Aurora — генерация</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="auth-screen" id="authScreen">
 <div class="auth-screen-inner">
 <h1 class="logo">Aurora</h1>
-<p class="subtitle">Генерация изображений</p>
+<p class="subtitle">Генерация контента</p>
 <div class="auth-card">
 <div class="auth-tabs">
 <button class="auth-tab active" data-tab="login" type="button">Вход</button>
@@ -41,185 +41,282 @@
 <button type="submit" class="generate-btn">Зарегистрироваться</button>
 </form>
 <p id="authMessage" class="auth-message"></p>
+<button type="button" class="guest-btn" id="guestBtn">Войти как гость →</button>
 </div>
 </div>
 </div>
+
 <div class="app hidden" id="appMain">
-<div class="topbar">
-<div></div>
-<div class="topbar-right">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="sidebar-logo">Aurora</span>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="side-tab active" data-tab="image">
+        <span class="side-icon">🖼️</span>
+        <span class="side-label">Изображения</span>
+      </button>
+      <button class="side-tab" data-tab="video">
+        <span class="side-icon">🎬</span>
+        <span class="side-label">Видео</span>
+      </button>
+      <button class="side-tab" data-tab="3d">
+        <span class="side-icon">🧊</span>
+        <span class="side-label">3D</span>
+      </button>
+      <button class="side-tab" data-tab="text">
+        <span class="side-icon">✍️</span>
+        <span class="side-label">Текст</span>
+      </button>
+      <button class="side-tab" data-tab="audio">
+        <span class="side-icon">🔊</span>
+        <span class="side-label">Аудио</span>
+      </button>
+    </nav>
+  </aside>
 
-<button id="starsBtn" class="stars-btn" type="button" title="Баланс звёзд">
-<span class="stars-icon">⭐</span>
-<span class="stars-count" id="starsCount">0</span>
-</button>
+  <div class="content">
 
-<div class="auth-container">
-<button id="authBtn" class="auth-btn hidden" type="button">👤 Войти</button>
-<div id="userMenu" class="user-menu hidden">
-<div class="user-menu-header">
-<span class="user-avatar" id="userAvatar">U</span>
-<span class="user-email" id="userEmail">user@example.com</span>
-</div>
-<button id="logoutBtn" class="user-menu-item" type="button">🚪 Выйти</button>
-</div>
-</div>
-<div class="profile-wrap" id="profileWrap">
-<button class="profile-btn" id="profileBtn" type="button">
-<span class="profile-avatar" id="profileAvatar">A</span>
-</button>
-<div class="profile-menu" id="profileMenu">
-<div class="profile-menu-header">
-<span class="profile-avatar big" id="profileAvatarMenu">A</span>
-<div>
-<div class="profile-name" id="profileNameMenu">Гость</div>
-<div class="profile-sub" id="profileStatsMenu">0 генераций</div>
-</div>
-</div>
-<button class="profile-menu-item" data-action="open-profile"><span>👤</span> Мой профиль</button>
-<button class="profile-menu-item" data-action="open-settings"><span>⚙️</span> Настройки</button>
-<div class="profile-menu-divider"></div>
-<button class="profile-menu-item danger" data-action="reset"><span>🔄</span> Сбросить данные</button>
-</div>
-</div>
-</div>
-</div>
-<header class="header">
-<h1 class="logo">Aurora</h1>
-<p class="subtitle">Генерация изображений</p>
-<nav class="tabs">
-<button class="tab active" data-tab="generator">✨ Генерация</button>
-<button class="tab" data-tab="gallery">🖼️ Галерея <span id="galleryCount" class="badge">0</span></button>
-</nav>
-</header>
-<section class="tab-content active" id="tab-generator">
-<div class="layout">
-<div class="panel">
-<div class="field">
-<label class="label" for="prompt">Ваш промт</label>
-<textarea id="prompt" class="textarea" placeholder="Опишите, что вы хотите увидеть..."></textarea>
-</div>
-<div class="field">
-<label class="label">Модель</label>
-<div class="dropdown" id="modelDropdown">
-<button type="button" class="dropdown-toggle" id="modelToggle">
-<span id="modelLabel">Nano Banana 2</span>
-<span class="dropdown-arrow">▾</span>
-</button>
-<ul class="dropdown-menu" id="modelMenu">
-<li class="dropdown-item active" data-model="nano-banana-2"><span class="dot dot-2"></span> Nano Banana 2</li>
-<li class="dropdown-item" data-model="nano-banana-pro"><span class="dot dot-pro"></span> Nano Banana Pro</li>
-<li class="dropdown-item" data-model="nano-banana-lite"><span class="dot dot-lite"></span> Nano Banana Lite</li>
-</ul>
-</div>
-</div>
-<div class="field">
-<label class="label">Входные изображения <span class="counter" id="imagesCounter">0 / 4</span></label>
-<label class="drop-zone" id="dropZone">
-<div class="drop-zone-icon">📎</div>
-<div class="drop-zone-text">Нажмите или перетащите файлы</div>
-<div class="drop-zone-hint" id="dropZoneHint">PNG, JPG, WEBP — максимум 4 файлов</div>
-<input type="file" id="imageInput" accept="image/*" multiple hidden>
-</label>
-<div id="imagesPreview" class="images-preview"></div>
-</div>
-<div class="field hidden" id="translateRow">
-<label class="checkbox-row"><input type="checkbox" id="translateInput"><span>Перевод входящих данных</span></label>
-</div>
-<div class="field">
-<label class="label">Соотношение сторон</label>
-<select id="ratioSelect" class="select">
-<option value="auto">auto</option>
-<option value="21:9">21:9</option>
-<option value="16:9">16:9</option>
-<option value="3:2">3:2</option>
-<option value="4:3">4:3</option>
-<option value="5:4">5:4</option>
-<option value="1:1" selected>1:1</option>
-<option value="4:5">4:5</option>
-<option value="3:4">3:4</option>
-<option value="9:16">9:16</option>
-<option value="9:21">9:21</option>
-</select>
-</div>
-<div class="field hidden" id="resolutionBlock">
-<label class="label">Разрешение</label>
-<select id="resolutionSelect" class="select"></select>
-</div>
-<div class="field hidden" id="versionBlock">
-<label class="label">Версия</label>
-<select id="versionSelect" class="select">
-<option value="v1">v1</option>
-<option value="v2">v2</option>
-</select>
-</div>
-<div class="field">
-<label class="label">Количество: <span id="numImagesValue">1</span></label>
-<input type="range" id="numImages" min="1" max="4" value="1" class="range">
-</div>
-<div class="field hidden" id="seedBlock">
-<label class="label">Seed <span class="label-hint">Пусто = случайно</span></label>
-<div class="input-with-btn">
-<input type="number" id="seedInput" class="input" placeholder="Например: 12345" min="0" max="4294967295" step="1">
-<button type="button" class="icon-btn" id="randomSeedBtn" title="Случайный seed">🎲</button>
-</div>
-<p class="field-hint">Максимум: 4 294 967 295</p>
-</div>
-<div class="field hidden" id="systemPromptBlock">
-<label class="label">Системный промт</label>
-<textarea id="systemPrompt" class="textarea" style="min-height:70px" placeholder="Дополнительные инструкции"></textarea>
-</div>
-<div class="field">
-<label class="label">Формат</label>
-<select id="formatSelect" class="select">
-<option value="png" selected>png</option>
-<option value="jpeg">jpeg</option>
-<option value="webp">webp</option>
-</select>
-</div>
-<div class="field hidden" id="webSearchRow">
-<label class="checkbox-row"><input type="checkbox" id="webSearch"><span>Веб-поиск</span></label>
-</div>
-<div class="field hidden" id="thinkingBlock">
-<label class="label">Уровень размышления</label>
-<select id="thinkingSelect" class="select">
-<option value="">Выбрать...</option>
-<option value="minimal">minimal</option>
-<option value="high">high</option>
-</select>
-</div>
-<button id="generateBtn" class="generate-btn" type="button">✨ Сгенерировать</button>
-</div>
-<div class="result-panel" id="resultPanel">
-<div class="result-empty" id="resultEmpty">
-<div class="result-empty-icon">🎨</div>
-<p class="result-empty-text">Здесь появится ваше изображение</p>
-<p class="result-empty-hint">Введите промт и нажмите «Сгенерировать»</p>
-</div>
-<div class="result-content hidden" id="resultContent">
-<div id="resultImages" class="result-grid"></div>
-<div class="result-info">
-<p id="resultMeta" class="result-meta"></p>
-<div class="result-actions">
-<button id="downloadCurrent" class="action-btn">⬇ Скачать всё</button>
-<button id="clearResult" class="action-btn">✕ Очистить</button>
-</div>
-</div>
-</div>
-</div>
-</div>
-</section>
-<section class="tab-content" id="tab-gallery">
-<div class="gallery-header">
-<h2 class="gallery-title">Ваши работы</h2>
-<button id="clearGallery" class="clear-gallery" type="button">Очистить всё</button>
-</div>
-<div id="gallery" class="gallery">
-<p class="gallery-empty" id="galleryEmpty">Пока ничего не сгенерировано</p>
-</div>
-</section>
+    <div class="topbar">
+      <div></div>
+      <div class="topbar-right">
+        <button id="starsBtn" class="stars-btn" type="button" title="Баланс звёзд">
+          <span class="stars-icon">⭐</span>
+          <span class="stars-count" id="starsCount">0</span>
+        </button>
+        <div class="profile-wrap" id="profileWrap">
+          <button class="profile-btn" id="profileBtn" type="button" title="Меню">
+            <span class="dots">⋮</span>
+          </button>
+          <div class="profile-menu" id="profileMenu">
+            <div class="profile-menu-header">
+              <span class="profile-avatar big" id="profileAvatarMenu">A</span>
+              <div>
+                <div class="profile-name" id="profileNameMenu">Гость</div>
+                <div class="profile-sub" id="profileStatsMenu">0 генераций</div>
+              </div>
+            </div>
+            <button class="profile-menu-item" data-action="open-profile"><span>👤</span> Мой профиль</button>
+            <button class="profile-menu-item" data-action="open-settings"><span>⚙️</span> Настройки</button>
+            <div class="profile-menu-divider"></div>
+            <button class="profile-menu-item danger" data-action="reset"><span>🔄</span> Сбросить данные</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ ИЗОБРАЖЕНИЯ ============ -->
+    <section class="tab-content active" id="tab-image">
+      <div class="sub-tabs">
+        <button class="sub-tab active" data-sub="generate" type="button">✨ Генерация</button>
+        <button class="sub-tab" data-sub="gallery" type="button">📁 Галерея <span class="sub-badge" id="galleryCount">0</span></button>
+      </div>
+
+      <div class="sub-content active" id="sub-generate">
+        <div class="layout">
+          <div class="panel">
+            <div class="field">
+              <label class="label" for="prompt">Ваш промт</label>
+              <textarea id="prompt" class="textarea" placeholder="Опишите, что вы хотите увидеть..."></textarea>
+            </div>
+            <div class="field">
+              <label class="label">Модель</label>
+              <div class="dropdown" id="modelDropdown">
+                <button type="button" class="dropdown-toggle" id="modelToggle">
+                  <span id="modelLabel">Nano Banana 2</span>
+                  <span class="dropdown-arrow">▾</span>
+                </button>
+                <ul class="dropdown-menu" id="modelMenu">
+                  <li class="dropdown-item active" data-model="nano-banana-2"><span class="dot dot-2"></span> Nano Banana 2</li>
+                  <li class="dropdown-item" data-model="nano-banana-pro"><span class="dot dot-pro"></span> Nano Banana Pro</li>
+                  <li class="dropdown-item" data-model="nano-banana-lite"><span class="dot dot-lite"></span> Nano Banana Lite</li>
+                </ul>
+              </div>
+            </div>
+            <div class="field">
+              <label class="label">Входные изображения <span class="counter" id="imagesCounter">0 / 4</span></label>
+              <label class="drop-zone" id="dropZone">
+                <div class="drop-zone-icon">📎</div>
+                <div class="drop-zone-text">Нажмите или перетащите файлы</div>
+                <div class="drop-zone-hint" id="dropZoneHint">PNG, JPG, WEBP — максимум 4 файлов</div>
+                <input type="file" id="imageInput" accept="image/*" multiple hidden>
+              </label>
+              <div id="imagesPreview" class="images-preview"></div>
+            </div>
+            <div class="field hidden" id="translateRow">
+              <label class="checkbox-row"><input type="checkbox" id="translateInput"><span>Перевод входящих данных</span></label>
+            </div>
+            <div class="field">
+              <label class="label">Соотношение сторон</label>
+              <select id="ratioSelect" class="select">
+                <option value="auto">auto</option>
+                <option value="21:9">21:9</option>
+                <option value="16:9">16:9</option>
+                <option value="3:2">3:2</option>
+                <option value="4:3">4:3</option>
+                <option value="5:4">5:4</option>
+                <option value="1:1" selected>1:1</option>
+                <option value="4:5">4:5</option>
+                <option value="3:4">3:4</option>
+                <option value="9:16">9:16</option>
+                <option value="9:21">9:21</option>
+              </select>
+            </div>
+            <div class="field hidden" id="resolutionBlock">
+              <label class="label">Разрешение</label>
+              <select id="resolutionSelect" class="select"></select>
+            </div>
+            <div class="field hidden" id="versionBlock">
+              <label class="label">Версия</label>
+              <select id="versionSelect" class="select">
+                <option value="v1">v1</option>
+                <option value="v2">v2</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="label">Количество: <span id="numImagesValue">1</span></label>
+              <input type="range" id="numImages" min="1" max="4" value="1" class="range">
+            </div>
+            <div class="field hidden" id="seedBlock">
+              <label class="label">Seed <span class="label-hint">Пусто = случайно</span></label>
+              <div class="input-with-btn">
+                <input type="number" id="seedInput" class="input" placeholder="Например: 12345" min="0" max="4294967295" step="1">
+                <button type="button" class="icon-btn" id="randomSeedBtn" title="Случайный seed">🎲</button>
+              </div>
+              <p class="field-hint">Максимум: 4 294 967 295</p>
+            </div>
+            <div class="field hidden" id="systemPromptBlock">
+              <label class="label">Системный промт</label>
+              <textarea id="systemPrompt" class="textarea" style="min-height:70px" placeholder="Дополнительные инструкции"></textarea>
+            </div>
+            <div class="field">
+              <label class="label">Формат</label>
+              <select id="formatSelect" class="select">
+                <option value="png" selected>png</option>
+                <option value="jpeg">jpeg</option>
+                <option value="webp">webp</option>
+              </select>
+            </div>
+            <div class="field hidden" id="webSearchRow">
+              <label class="checkbox-row"><input type="checkbox" id="webSearch"><span>Веб-поиск</span></label>
+            </div>
+            <div class="field hidden" id="thinkingBlock">
+              <label class="label">Уровень размышления</label>
+              <select id="thinkingSelect" class="select">
+                <option value="">Выбрать...</option>
+                <option value="minimal">minimal</option>
+                <option value="high">high</option>
+              </select>
+            </div>
+            <button id="generateBtn" class="generate-btn" type="button">✨ Сгенерировать</button>
+          </div>
+          <div class="result-panel" id="resultPanel">
+            <div class="result-empty" id="resultEmpty">
+              <div class="result-empty-icon">🎨</div>
+              <p class="result-empty-text">Здесь появится ваше изображение</p>
+              <p class="result-empty-hint">Введите промт и нажмите «Сгенерировать»</p>
+            </div>
+            <div class="result-content hidden" id="resultContent">
+              <div id="resultImages" class="result-grid"></div>
+              <div class="result-info">
+                <p id="resultMeta" class="result-meta"></p>
+                <div class="result-actions">
+                  <button id="downloadCurrent" class="action-btn">⬇ Скачать всё</button>
+                  <button id="clearResult" class="action-btn">✕ Очистить</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sub-content" id="sub-gallery">
+        <div class="gallery-header">
+          <h2 class="gallery-title">Ваши изображения</h2>
+          <button id="clearGallery" class="clear-gallery" type="button">Очистить всё</button>
+        </div>
+        <div id="gallery" class="gallery">
+          <p class="gallery-empty" id="galleryEmpty">Пока ничего не сгенерировано</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ВИДЕО ============ -->
+    <section class="tab-content" id="tab-video">
+      <div class="soon-panel">
+        <div class="soon-icon">🎬</div>
+        <h2 class="soon-title">Видео</h2>
+        <p class="soon-text">Модели ИИ для этой задачи пока нет.</p>
+        <p class="soon-hint">Скоро добавим генерацию видео.</p>
+      </div>
+    </section>
+
+    <!-- ============ 3D ============ -->
+    <section class="tab-content" id="tab-3d">
+      <div class="soon-panel">
+        <div class="soon-icon">🧊</div>
+        <h2 class="soon-title">3D</h2>
+        <p class="soon-text">Модели ИИ для этой задачи пока нет.</p>
+        <p class="soon-hint">Скоро добавим генерацию 3D-моделей.</p>
+      </div>
+    </section>
+
+    <!-- ============ ТЕКСТ ============ -->
+    <section class="tab-content" id="tab-text">
+      <div class="chat-layout">
+        <aside class="chat-sidebar" id="chatSidebar">
+          <button class="chat-new-btn" id="chatNewBtn" type="button">+ Новый чат</button>
+          <div class="chat-list" id="chatList"></div>
+        </aside>
+        <div class="chat-main">
+          <div class="chat-topbar">
+            <select class="chat-model-select" id="chatModelSelect">
+              <option value="">Выбрать модель…</option>
+              <option value="gpt-6">GPT-6 Luna</option>
+              <option value="claude-5">Claude 5</option>
+              <option value="gemini-3">Gemini 3 Pro</option>
+              <option value="deepseek-4">DeepSeek V4</option>
+            </select>
+            <div class="chat-topbar-right">
+              <button class="chat-topbar-btn" id="chatClearBtn" type="button" title="Очистить чат">🗑</button>
+            </div>
+          </div>
+          <div class="chat-messages" id="chatMessages">
+            <div class="chat-welcome">
+              <div class="chat-welcome-icon">✍️</div>
+              <h2>Чем помочь?</h2>
+              <p>Задайте вопрос или прикрепите фото — начнём диалог.</p>
+            </div>
+          </div>
+          <div class="chat-input-wrap">
+            <div class="chat-attachments" id="chatAttachments"></div>
+            <div class="chat-input-row">
+              <label class="chat-attach-btn" title="Прикрепить фото">
+                📎
+                <input type="file" id="chatImageInput" accept="image/*" multiple hidden>
+              </label>
+              <textarea id="chatInput" class="chat-input" placeholder="Напишите сообщение..." rows="1"></textarea>
+              <button id="chatSendBtn" class="chat-send-btn" type="button">➤</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ АУДИО ============ -->
+    <section class="tab-content" id="tab-audio">
+      <div class="soon-panel">
+        <div class="soon-icon">🔊</div>
+        <h2 class="soon-title">Аудио</h2>
+        <p class="soon-text">Модели ИИ для этой задачи пока нет.</p>
+        <p class="soon-hint">Скоро добавим озвучку и генерацию музыки.</p>
+      </div>
+    </section>
+
+  </div>
 </div>
 
+<!-- Модалка звёзд -->
 <div class="modal-overlay hidden" id="starsModal">
 <div class="modal">
 <button class="modal-close" id="starsModalClose" type="button">✕</button>
@@ -258,6 +355,7 @@
 </div>
 </div>
 
+<!-- Модалка профиля -->
 <div class="modal-overlay hidden" id="profileModal">
 <div class="modal">
 <button class="modal-close" id="modalClose" type="button">✕</button>
@@ -295,7 +393,6 @@
 </div>
 </div>
 <div class="toast hidden" id="toast"></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
 <script src="script.js"></script>
 </body>
