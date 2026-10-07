@@ -109,6 +109,99 @@
       if ($('starsModalBalance')) $('starsModalBalance').textContent = balance;
     }
 
+    // ----- АНИМАЦИЯ ПОПОЛНЕНИЯ -----
+    function playStarsAnimation(amount, sourceEl) {
+      const balanceBtn = $('starsBtn');
+      const countEl = $('starsCount');
+      if (!balanceBtn || !countEl) return;
+
+      const targetRect = balanceBtn.getBoundingClientRect();
+      const targetX = targetRect.left + targetRect.width / 2;
+      const targetY = targetRect.top + targetRect.height / 2;
+
+      const sourceRect = sourceEl ? sourceEl.getBoundingClientRect() : null;
+      const startX = sourceRect ? sourceRect.left + sourceRect.width / 2 : targetX;
+      const startY = sourceRect ? sourceRect.top + sourceRect.height / 2 : targetY;
+
+      const starCount = Math.max(3, Math.min(8, Math.ceil(amount / 200) + 2));
+
+      for (let i = 0; i < starCount; i++) {
+        const star = document.createElement('div');
+        star.className = 'star-fly';
+        star.textContent = '⭐';
+
+        const offX = (Math.random() - 0.5) * 40;
+        const offY = (Math.random() - 0.5) * 40;
+        star.style.left = (startX + offX) + 'px';
+        star.style.top  = (startY + offY) + 'px';
+
+        document.body.appendChild(star);
+
+        const dx = targetX - (startX + offX);
+        const dy = targetY - (startY + offY);
+        const delay = i * 70;
+
+        setTimeout(function () {
+          star.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(0.5) rotate(' + (Math.random() * 360) + 'deg)';
+          star.style.opacity = '0.15';
+        }, delay);
+
+        setTimeout(function () { star.remove(); }, delay + 1000);
+      }
+
+      if (sourceEl) {
+        for (let i = 0; i < 10; i++) {
+          const spark = document.createElement('div');
+          spark.className = 'spark';
+          spark.style.left = startX + 'px';
+          spark.style.top  = startY + 'px';
+          document.body.appendChild(spark);
+
+          const angle = Math.random() * Math.PI * 2;
+          const dist = 40 + Math.random() * 70;
+          const sx = Math.cos(angle) * dist;
+          const sy = Math.sin(angle) * dist;
+
+          requestAnimationFrame(function () {
+            spark.style.transform = 'translate(' + sx + 'px,' + sy + 'px) scale(0.2)';
+            spark.style.opacity = '0';
+          });
+
+          setTimeout(function () { spark.remove(); }, 900);
+        }
+      }
+
+      const hitDelay = starCount * 70 + 850;
+      setTimeout(function () {
+        balanceBtn.classList.remove('pulse');
+        void balanceBtn.offsetWidth;
+        balanceBtn.classList.add('pulse');
+        setTimeout(function () { balanceBtn.classList.remove('pulse'); }, 1000);
+      }, hitDelay);
+
+      const startBalance = parseInt(countEl.textContent, 10) || 0;
+      const endBalance = getStars();
+      const duration = 700;
+      const startTime = performance.now() + hitDelay;
+
+      setTimeout(function () {
+        countEl.classList.remove('pop');
+        void countEl.offsetWidth;
+        countEl.classList.add('pop');
+
+        function tick(now) {
+          const elapsed = now - startTime;
+          const t = Math.min(1, Math.max(0, elapsed / duration));
+          const eased = 1 - Math.pow(1 - t, 3);
+          const value = Math.round(startBalance + (endBalance - startBalance) * eased);
+          countEl.textContent = value;
+          if (t < 1) requestAnimationFrame(tick);
+          else countEl.textContent = endBalance;
+        }
+        requestAnimationFrame(tick);
+      }, hitDelay);
+    }
+
     function openStarsModal() {
       updateStarsUI();
       if ($('starsModal')) $('starsModal').classList.remove('hidden');
@@ -160,9 +253,26 @@
         if (!amount || amount < 1) { showToast('Выберите пакет или введите количество'); return; }
         if (amount > 100000) { showToast('Максимум 100 000 за раз'); return; }
 
+        const btn = $('starsTopUpBtn');
+
+        // Вспышка внутри модалки
+        const modal = document.querySelector('#starsModal .modal');
+        if (modal) {
+          const flash = document.createElement('div');
+          flash.className = 'stars-flash';
+          modal.appendChild(flash);
+          setTimeout(function () { flash.remove(); }, 800);
+        }
+
+        // Начисляем и запускаем анимацию
         addStars(amount);
-        showToast('Начислено ' + amount + ' ⭐');
-        closeStarsModal();
+        playStarsAnimation(amount, btn);
+
+        // Закрываем модалку чуть позже
+        setTimeout(function () {
+          closeStarsModal();
+          showToast('Начислено ' + amount + ' ⭐');
+        }, 450);
       });
     }
 
@@ -256,7 +366,7 @@
     // ИЗОБРАЖЕНИЯ
     // ============================================================
     const MAX_SEED = 4294967295;
-    const STARS_PER_IMAGE = 1; // сколько звёзд списывается за 1 картинку
+    const STARS_PER_IMAGE = 1;
 
     const MODELS = {
       'nano-banana-2': {
@@ -435,7 +545,6 @@
         const cost = count * STARS_PER_IMAGE;
 
         // === СПИСАНИЕ ЗВЁЗД ===
-        // Если хочешь сделать звёзды декоративными — закомментируй этот блок
         if (getStars() < cost) {
           showToast('Недостаточно звёзд. Нужно ' + cost + ' ⭐');
           openStarsModal();
@@ -448,7 +557,6 @@
         try {
           await new Promise(function (r) { setTimeout(r, 1200); });
 
-          // Списываем после успешной генерации
           spendStars(cost);
 
           if ($('resultImages')) $('resultImages').innerHTML = '';
