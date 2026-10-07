@@ -114,7 +114,6 @@
       }
     }
 
-    // ----- АНИМАЦИЯ ПОПОЛНЕНИЯ -----
     function playStarsAnimation(amount, sourceEl) {
       const balanceBtn = $('starsBtn');
       const countEl = $('starsCount');
@@ -632,12 +631,20 @@
     }
 
     // ============================================================
-    // ЧАТ
+    // ЧАТ С ВЫБОРОМ МОДЕЛИ
     // ============================================================
-    const CHAT_STORAGE = 'aurora_chats_v1';
+    const CHAT_STORAGE = 'aurora_chats_v2';
+    const CHAT_MODELS = {
+      'gpt-6':    { name: 'GPT-6 Luna',    icon: '🧠' },
+      'claude-5': { name: 'Claude 5',      icon: '🎭' },
+      'gemini-3': { name: 'Gemini 3 Pro',  icon: '💎' },
+      'deepseek-4': { name: 'DeepSeek V4', icon: '🐋' }
+    };
+
     let chats = [];
     let activeChatId = null;
     let chatAttachments = [];
+    let pendingNewChat = false; // ждём выбор модели для нового чата
 
     function loadChats() {
       try {
@@ -664,7 +671,9 @@
           const div = document.createElement('div');
           div.className = 'chat-list-item' + (chat.id === activeChatId ? ' active' : '');
           div.dataset.id = chat.id;
+          const modelInfo = CHAT_MODELS[chat.model] || { name: '—', icon: '🤖' };
           div.innerHTML =
+            '<div class="chat-list-icon">' + modelInfo.icon + '</div>' +
             '<div class="chat-list-title">' + escapeHtml(chat.title || 'Новый чат') + '</div>' +
             '<button class="chat-list-delete" data-del="' + chat.id + '" title="Удалить">✕</button>';
           list.appendChild(div);
@@ -700,21 +709,88 @@
       wrap.scrollTop = wrap.scrollHeight;
     }
 
+    function updateChatModelBadge() {
+      const chat = getActiveChat();
+      const badge = $('chatModelBadge');
+      if (!badge) return;
+      if (!chat) { badge.style.display = 'none'; return; }
+      badge.style.display = 'flex';
+      const modelInfo = CHAT_MODELS[chat.model] || { name: '—', icon: '🤖' };
+      badge.querySelector('.chat-model-badge-name').textContent = modelInfo.icon + ' ' + modelInfo.name;
+    }
+
+    function showModelPicker(isNew) {
+      pendingNewChat = !!isNew;
+      const picker = $('chatModelPicker');
+      const main = $('chatMainContent');
+      if (picker) picker.classList.remove('hidden');
+      if (main) main.classList.add('hidden');
+    }
+
+    function showChatMain() {
+      pendingNewChat = false;
+      const picker = $('chatModelPicker');
+      const main = $('chatMainContent');
+      if (picker) picker.classList.add('hidden');
+      if (main) main.classList.remove('hidden');
+    }
+
     function selectChat(id) {
       activeChatId = id;
       renderChatList();
       renderChatMessages();
+      updateChatModelBadge();
+      showChatMain();
     }
 
+    function createChatWithModel(modelKey) {
+      const chat = {
+        id: newChatId(),
+        title: 'Новый чат',
+        model: modelKey,
+        messages: [],
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      };
+      chats.push(chat);
+      saveChats();
+      selectChat(chat.id);
+      if ($('chatInput')) $('chatInput').focus();
+    }
+
+    // Клик по карточке модели
+    document.querySelectorAll('.chat-model-card').forEach(function (card) {
+      card.addEventListener('click', function () {
+        const modelKey = card.dataset.model;
+        if (pendingNewChat) {
+          createChatWithModel(modelKey);
+        } else {
+          // Смена модели у активного чата
+          const chat = getActiveChat();
+          if (chat) {
+            chat.model = modelKey;
+            chat.updatedAt = Date.now();
+            saveChats();
+            renderChatList();
+            updateChatModelBadge();
+            showChatMain();
+            showToast('Модель изменена на ' + CHAT_MODELS[modelKey].name);
+          }
+        }
+      });
+    });
+
+    // Кнопка "+ Новый чат"
     if ($('chatNewBtn')) {
       $('chatNewBtn').addEventListener('click', function () {
-        const chat = {
-          id: newChatId(), title: 'Новый чат', messages: [],
-          createdAt: Date.now(), updatedAt: Date.now()
-        };
-        chats.push(chat);
-        saveChats();
-        selectChat(chat.id);
+        showModelPicker(true);
+      });
+    }
+
+    // Кнопка "сменить модель" в баре
+    if ($('chatModelChange')) {
+      $('chatModelChange').addEventListener('click', function () {
+        showModelPicker(false);
       });
     }
 
@@ -724,8 +800,18 @@
         if (delBtn) {
           const id = delBtn.dataset.del;
           chats = chats.filter(function (c) { return c.id !== id; });
-          if (activeChatId === id) activeChatId = chats.length ? chats[0].id : null;
-          saveChats(); renderChatList(); renderChatMessages();
+          if (activeChatId === id) {
+            if (chats.length > 0) {
+              activeChatId = chats[0].id;
+              renderChatMessages();
+              updateChatModelBadge();
+              showChatMain();
+            } else {
+              activeChatId = null;
+              showModelPicker(true);
+            }
+          }
+          saveChats(); renderChatList();
           return;
         }
         const item = e.target.closest('.chat-list-item');
@@ -785,14 +871,7 @@
       if (!text && chatAttachments.length === 0) return;
 
       let chat = getActiveChat();
-      if (!chat) {
-        chat = {
-          id: newChatId(), title: 'Новый чат', messages: [],
-          createdAt: Date.now(), updatedAt: Date.now()
-        };
-        chats.push(chat);
-        activeChatId = chat.id;
-      }
+      if (!chat) return;
 
       chat.messages.push({
         role: 'user',
@@ -813,11 +892,9 @@
       renderChatList();
       renderChatMessages();
 
+      const modelName = CHAT_MODELS[chat.model] ? CHAT_MODELS[chat.model].name : 'модель';
+
       setTimeout(function () {
-        const modelSelect = $('chatModelSelect');
-        const modelName = modelSelect && modelSelect.value
-          ? modelSelect.options[modelSelect.selectedIndex].text
-          : 'модель';
         const aiText = '🤖 ' + modelName + ' пока не подключена. Когда подключим API — здесь будет ответ модели на ваш запрос: «' +
           (text || '(фото)').slice(0, 80) + '»';
 
@@ -959,8 +1036,13 @@
     loadChats();
     if (chats.length > 0) {
       activeChatId = chats.slice().sort(function (a, b) { return b.updatedAt - a.updatedAt; })[0].id;
+      renderChatList();
+      renderChatMessages();
+      updateChatModelBadge();
+      showChatMain();
+    } else {
+      renderChatList();
+      showModelPicker(true);
     }
-    renderChatList();
-    renderChatMessages();
   });
 })();
