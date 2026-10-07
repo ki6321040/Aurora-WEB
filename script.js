@@ -289,7 +289,6 @@
       });
     });
 
-    // ---------- SUB-TABS ----------
     document.querySelectorAll('.sub-tab').forEach(function (tab) {
       tab.addEventListener('click', function () {
         document.querySelectorAll('.sub-tab').forEach(function (t) { t.classList.remove('active'); });
@@ -644,7 +643,6 @@
     let chats = [];
     let activeChatId = null;
     let chatAttachments = [];
-    let pendingNewChat = false; // ждём выбор модели для нового чата
 
     function loadChats() {
       try {
@@ -719,8 +717,7 @@
       badge.querySelector('.chat-model-badge-name').textContent = modelInfo.icon + ' ' + modelInfo.name;
     }
 
-    function showModelPicker(isNew) {
-      pendingNewChat = !!isNew;
+    function showModelPicker() {
       const picker = $('chatModelPicker');
       const main = $('chatMainContent');
       if (picker) picker.classList.remove('hidden');
@@ -728,7 +725,6 @@
     }
 
     function showChatMain() {
-      pendingNewChat = false;
       const picker = $('chatModelPicker');
       const main = $('chatMainContent');
       if (picker) picker.classList.add('hidden');
@@ -758,39 +754,18 @@
       if ($('chatInput')) $('chatInput').focus();
     }
 
-    // Клик по карточке модели
+    // Клик по карточке модели — всегда создаёт новый чат
     document.querySelectorAll('.chat-model-card').forEach(function (card) {
       card.addEventListener('click', function () {
         const modelKey = card.dataset.model;
-        if (pendingNewChat) {
-          createChatWithModel(modelKey);
-        } else {
-          // Смена модели у активного чата
-          const chat = getActiveChat();
-          if (chat) {
-            chat.model = modelKey;
-            chat.updatedAt = Date.now();
-            saveChats();
-            renderChatList();
-            updateChatModelBadge();
-            showChatMain();
-            showToast('Модель изменена на ' + CHAT_MODELS[modelKey].name);
-          }
-        }
+        createChatWithModel(modelKey);
       });
     });
 
-    // Кнопка "+ Новый чат"
+    // Кнопка "+ Новый чат" — всегда показывает выбор модели
     if ($('chatNewBtn')) {
       $('chatNewBtn').addEventListener('click', function () {
-        showModelPicker(true);
-      });
-    }
-
-    // Кнопка "сменить модель" в баре
-    if ($('chatModelChange')) {
-      $('chatModelChange').addEventListener('click', function () {
-        showModelPicker(false);
+        showModelPicker();
       });
     }
 
@@ -808,7 +783,7 @@
               showChatMain();
             } else {
               activeChatId = null;
-              showModelPicker(true);
+              showModelPicker();
             }
           }
           saveChats(); renderChatList();
@@ -1042,7 +1017,7 @@
       showChatMain();
     } else {
       renderChatList();
-      showModelPicker(true);
+      showModelPicker();
     }
   });
 })();
