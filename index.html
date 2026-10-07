@@ -47,9 +47,10 @@
 </div>
 
 <div class="app hidden" id="appMain">
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
       <span class="sidebar-logo">Aurora</span>
+      <button class="sidebar-toggle" id="sidebarToggle" type="button" title="Свернуть меню">‹</button>
     </div>
     <nav class="sidebar-nav">
       <button class="side-tab active" data-tab="image">
@@ -76,6 +77,7 @@
   </aside>
 
   <div class="content">
+    <button class="sidebar-show" id="sidebarShow" type="button" title="Показать меню">›</button>
 
     <div class="topbar">
       <div></div>
@@ -105,7 +107,7 @@
       </div>
     </div>
 
-    <!-- ============ ИЗОБРАЖЕНИЯ ============ -->
+    <!-- ИЗОБРАЖЕНИЯ -->
     <section class="tab-content active" id="tab-image">
       <div class="sub-tabs">
         <button class="sub-tab active" data-sub="generate" type="button">✨ Генерация</button>
@@ -241,7 +243,7 @@
       </div>
     </section>
 
-    <!-- ============ ВИДЕО ============ -->
+    <!-- ВИДЕО -->
     <section class="tab-content" id="tab-video">
       <div class="soon-panel">
         <div class="soon-icon">🎬</div>
@@ -251,7 +253,7 @@
       </div>
     </section>
 
-    <!-- ============ 3D ============ -->
+    <!-- 3D -->
     <section class="tab-content" id="tab-3d">
       <div class="soon-panel">
         <div class="soon-icon">🧊</div>
@@ -261,7 +263,7 @@
       </div>
     </section>
 
-    <!-- ============ ТЕКСТ ============ -->
+    <!-- ТЕКСТ -->
     <section class="tab-content" id="tab-text">
       <div class="chat-layout">
         <aside class="chat-sidebar" id="chatSidebar">
@@ -303,7 +305,7 @@
       </div>
     </section>
 
-    <!-- ============ АУДИО ============ -->
+    <!-- АУДИО -->
     <section class="tab-content" id="tab-audio">
       <div class="soon-panel">
         <div class="soon-icon">🔊</div>
