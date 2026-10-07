@@ -107,6 +107,11 @@
       const balance = getStars();
       if ($('starsCount')) $('starsCount').textContent = balance;
       if ($('starsModalBalance')) $('starsModalBalance').textContent = balance;
+      const btn = $('starsBtn');
+      if (btn) {
+        if (balance < 10) btn.classList.add('low');
+        else btn.classList.remove('low');
+      }
     }
 
     // ----- АНИМАЦИЯ ПОПОЛНЕНИЯ -----
@@ -123,34 +128,35 @@
       const startX = sourceRect ? sourceRect.left + sourceRect.width / 2 : targetX;
       const startY = sourceRect ? sourceRect.top + sourceRect.height / 2 : targetY;
 
-      const starCount = Math.max(3, Math.min(8, Math.ceil(amount / 200) + 2));
+      const starCount = Math.max(4, Math.min(10, Math.ceil(amount / 150) + 3));
 
       for (let i = 0; i < starCount; i++) {
         const star = document.createElement('div');
         star.className = 'star-fly';
         star.textContent = '⭐';
 
-        const offX = (Math.random() - 0.5) * 40;
-        const offY = (Math.random() - 0.5) * 40;
+        const offX = (Math.random() - 0.5) * 50;
+        const offY = (Math.random() - 0.5) * 50;
         star.style.left = (startX + offX) + 'px';
         star.style.top  = (startY + offY) + 'px';
+        star.style.fontSize = (22 + Math.random() * 16) + 'px';
 
         document.body.appendChild(star);
 
         const dx = targetX - (startX + offX);
         const dy = targetY - (startY + offY);
-        const delay = i * 70;
+        const delay = i * 60;
 
         setTimeout(function () {
-          star.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(0.5) rotate(' + (Math.random() * 360) + 'deg)';
-          star.style.opacity = '0.15';
+          star.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(0.4) rotate(' + (Math.random() * 720 - 360) + 'deg)';
+          star.style.opacity = '0.1';
         }, delay);
 
-        setTimeout(function () { star.remove(); }, delay + 1000);
+        setTimeout(function () { star.remove(); }, delay + 1100);
       }
 
       if (sourceEl) {
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 12; i++) {
           const spark = document.createElement('div');
           spark.className = 'spark';
           spark.style.left = startX + 'px';
@@ -158,20 +164,20 @@
           document.body.appendChild(spark);
 
           const angle = Math.random() * Math.PI * 2;
-          const dist = 40 + Math.random() * 70;
+          const dist = 50 + Math.random() * 80;
           const sx = Math.cos(angle) * dist;
           const sy = Math.sin(angle) * dist;
 
           requestAnimationFrame(function () {
-            spark.style.transform = 'translate(' + sx + 'px,' + sy + 'px) scale(0.2)';
+            spark.style.transform = 'translate(' + sx + 'px,' + sy + 'px) scale(0.1)';
             spark.style.opacity = '0';
           });
 
-          setTimeout(function () { spark.remove(); }, 900);
+          setTimeout(function () { spark.remove(); }, 950);
         }
       }
 
-      const hitDelay = starCount * 70 + 850;
+      const hitDelay = starCount * 60 + 800;
       setTimeout(function () {
         balanceBtn.classList.remove('pulse');
         void balanceBtn.offsetWidth;
@@ -181,7 +187,7 @@
 
       const startBalance = parseInt(countEl.textContent, 10) || 0;
       const endBalance = getStars();
-      const duration = 700;
+      const duration = 650;
       const startTime = performance.now() + hitDelay;
 
       setTimeout(function () {
@@ -255,7 +261,6 @@
 
         const btn = $('starsTopUpBtn');
 
-        // Вспышка внутри модалки
         const modal = document.querySelector('#starsModal .modal');
         if (modal) {
           const flash = document.createElement('div');
@@ -264,11 +269,9 @@
           setTimeout(function () { flash.remove(); }, 800);
         }
 
-        // Начисляем и запускаем анимацию
         addStars(amount);
         playStarsAnimation(amount, btn);
 
-        // Закрываем модалку чуть позже
         setTimeout(function () {
           closeStarsModal();
           showToast('Начислено ' + amount + ' ⭐');
@@ -298,7 +301,7 @@
       });
     });
 
-    // ---------- ГАЛЕРЕЯ (только картинки) ----------
+    // ---------- ГАЛЕРЕЯ ----------
     let galleryItems = [];
 
     function addToGallery(url, prompt, model) {
@@ -544,7 +547,6 @@
         const count = parseInt($('numImages').value, 10) || 1;
         const cost = count * STARS_PER_IMAGE;
 
-        // === СПИСАНИЕ ЗВЁЗД ===
         if (getStars() < cost) {
           showToast('Недостаточно звёзд. Нужно ' + cost + ' ⭐');
           openStarsModal();
@@ -909,6 +911,41 @@
         showToast('Профиль сохранён');
         closeProfileModal();
       });
+    }
+
+    // ---------- СВОРАЧИВАЕМЫЙ САЙДБАР ----------
+    const SIDEBAR_KEY = 'aurora_sidebar_collapsed';
+    const sidebarEl = $('sidebar');
+    const sidebarToggle = $('sidebarToggle');
+    const sidebarShow = $('sidebarShow');
+
+    function setSidebarCollapsed(collapsed) {
+      if (!sidebarEl || !sidebarShow) return;
+      if (collapsed) {
+        sidebarEl.classList.add('collapsed');
+        sidebarShow.classList.add('visible');
+      } else {
+        sidebarEl.classList.remove('collapsed');
+        sidebarShow.classList.remove('visible');
+      }
+      try {
+        localStorage.setItem(SIDEBAR_KEY, collapsed ? '1' : '0');
+      } catch (e) {}
+    }
+
+    if (sidebarToggle) {
+      sidebarToggle.addEventListener('click', function () {
+        setSidebarCollapsed(true);
+      });
+    }
+    if (sidebarShow) {
+      sidebarShow.addEventListener('click', function () {
+        setSidebarCollapsed(false);
+      });
+    }
+
+    if (localStorage.getItem(SIDEBAR_KEY) === '1') {
+      setSidebarCollapsed(true);
     }
 
     // ---------- ИНИЦИАЛИЗАЦИЯ ----------
