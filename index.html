@@ -282,12 +282,12 @@
         </aside>
         <div class="chat-main">
 
-          <!-- Экран выбора модели (когда чат ещё не создан или создаётся новый) -->
+          <!-- Экран выбора модели (когда 0 чатов или создаётся новый) -->
           <div class="chat-model-picker" id="chatModelPicker">
             <div class="chat-model-picker-inner">
               <div class="chat-model-picker-icon">✨</div>
               <h2 class="chat-model-picker-title">Выберите модель</h2>
-              <p class="chat-model-picker-sub">Для этого чата будет использоваться выбранная модель</p>
+              <p class="chat-model-picker-sub">Модель нельзя изменить после создания чата</p>
               <div class="chat-model-grid" id="chatModelGrid">
                 <button class="chat-model-card" data-model="gpt-6">
                   <div class="chat-model-card-icon">🧠</div>
@@ -318,7 +318,6 @@
             <div class="chat-topbar">
               <div class="chat-model-badge" id="chatModelBadge">
                 <span class="chat-model-badge-name">GPT-6 Luna</span>
-                <button class="chat-model-badge-change" id="chatModelChange" type="button" title="Сменить модель">⇄</button>
               </div>
               <div class="chat-topbar-right">
                 <button class="chat-topbar-btn" id="chatClearBtn" type="button" title="Очистить чат">🗑</button>
